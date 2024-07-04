@@ -1,26 +1,54 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div>
+    <p v-if="msg.length > 0">
+      {{msg}}
+    </p>
+    <p v-else>
+      no text
+    </p>
+    <input type="text" v-model="msg">
+    <button @click="clear()">clear</button>
+  </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import axios from 'axios'
 
 export default {
-  name: 'App',
-  components: {
-    HelloWorld
-  }
+  data () {
+    return {
+      msg: 'Hello World! hoge'
+    }
+  },
+  methods: {
+    clear () {
+      this.msg = ''
+    },
+    update () {
+      axios.get('http://localhost:8000/get/hoge')
+        .then((response) => {
+            console.log(response.data);
+            this.msg = response.data.message;
+            });
+            setTimeout(() => { this.update(); }, 1000);
+            }
+    
+  },
+  mounted () {
+    this.msg = "fuga";
+    this.update();
+    
+//    fetch('https://shakerato:8000/')
+//    .then( response => {
+//     this.msg = response.json();  
+//          return response.json()
+//    });
+//    .then( json => {
+//      this.msg = json.skip;
+//    })
+//    .catch( (err) => {
+//      this.msg = err // エラー処理
+//    });
+  }  
 }
 </script>
-
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
