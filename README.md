@@ -1,4 +1,4 @@
-# test2
+# metis_vue
 
 ## Project setup
 ```
