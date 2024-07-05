@@ -1,7 +1,15 @@
 <template>
    <div>
       hoge aaaa
-
+      <table>
+         <tr>
+           <th>device</th><th>status</th>
+         </tr>
+         <tr v-for="(state,device) in msg" :key="device">
+            <td>{{ device }}</td>
+            <td>{{ state }}</td>
+         </tr>
+      </table>
       {{msg}}
    </div>
 </template>
