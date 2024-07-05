@@ -9,10 +9,14 @@
     <input type="text" v-model="msg">
     <button @click="clear()">clear</button>
   </div>
+  <div>
+   <NestDAQStatus></NestDAQStatus>
+  </div>
 </template>
 
 <script>
-import axios from 'axios'
+//import axios from 'axios'
+import NestDAQStatus from './components/NestDAQStatus.vue'
 
 export default {
   data () {
@@ -20,23 +24,26 @@ export default {
       msg: 'Hello World! hoge'
     }
   },
+  components: {
+   NestDAQStatus,
+  },
   methods: {
     clear () {
       this.msg = ''
     },
     update () {
-      axios.get('http://localhost:8000/get/hoge')
-        .then((response) => {
-            console.log(response.data);
-            this.msg = response.data.message;
-            });
-            setTimeout(() => { this.update(); }, 1000);
-            }
-    
+//      axios.get('http://localhost:8000/get/hoge')
+        //.then((response) => {
+            //console.log(response.data);
+//            this.msg = response.data.message;
+            //});
+            //setTimeout(() => { this.update(); }, 1000);
+            //}
+        }
   },
   mounted () {
-    this.msg = "fuga";
-    this.update();
+    //this.msg = "fuga";
+    //this.update();
     
 //    fetch('https://shakerato:8000/')
 //    .then( response => {
