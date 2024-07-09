@@ -2,9 +2,9 @@
   <div>
     <h2 class="font-bold"> Expert mode </h2>
     <div>
-      Run number: <input size="10" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" type="text" v-model="run_number_current">
-      Next:  <input  size="10" type="text"  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" v-model="run_number_next"></div>
-    <div> Comment: <input size="50"  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" type="text" v-model="run_comment"> <button  class="btn btn-blue" @click="clear()"> clear</button></div>
+      Run number: <input size="10" class="" type="text" v-model="run_number_current">
+      Next:  <input  size="10" type="text" class="ipt" v-model="run_number_next"></div>
+    <div> Comment: <input size="50" class="ipt" type="text" v-model="run_comment"> <button  class="btn btn-blue" @click="clear()"> clear</button></div>
     <div> Start: {{daq_start_time}} </div>
     <div> Stop: {{daq_stop_time}} </div>
     <div>
@@ -39,8 +39,10 @@
   .btn-blue:hover {
     @apply bg-blue-700;
   }
+  .ipt {
+    @apply bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500;
+  }
   </style>
-
 <script>
 import axios from 'axios'
 
@@ -68,8 +70,14 @@ export default {
             //console.log(response.data);
                 this.run_number_current = response.data;
                 this.run_number_next = Number(this.run_number_current) +1 ;
-            });
-	axios.get('http://localhost:8000/set/run_info:run_comment/'+this.run_comment);
+            })
+        .catch((error)=>{
+            console.log(error.data);
+        });
+	axios.get('http://localhost:8000/set/run_info:run_comment/'+this.run_comment)
+	.catch((error)=>{
+            console.log(error.data);
+        });
         axios.get('http://localhost:8000/nestdaq/run_comment/')
         .then((response) => {
                 this.run_comment = response.data;
@@ -78,7 +86,10 @@ export default {
         .then((response) => {
             //console.log(response.data);
                 this.status_msg = response.data;
-            });
+            })
+	.catch((error)=>{
+            console.log(error.data);
+        });
         setTimeout(() => { this.update(); }, 1000);
       },
       wait_for_state_change(){
@@ -116,7 +127,10 @@ export default {
          if (publish_flag == 1) {
             this.daqctl_chnl = "daqctl";
             this.daqctl_msg = '{"command":"change_state","value":"'+cmd_arr[0]+'","services":["all"],"instances":["all"]}';
-            axios.get('http://localhost:8000/publish/'+this.daqctl_chnl+'/'+this.daqctl_msg);
+            axios.get('http://localhost:8000/publish/'+this.daqctl_chnl+'/'+this.daqctl_msg)
+            .catch((error)=>{
+              console.log(error.data);
+            });
             if (cmd_arr[0] == "CONNECT") {
               this.wait_daqctl_state = "DEVICE READY";
             }else if (cmd_arr[0] == "INIT TASK") {
