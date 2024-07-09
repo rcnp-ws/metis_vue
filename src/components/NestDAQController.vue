@@ -1,28 +1,45 @@
 <template>
   <div>
-    <h2> Run Controller </h2>
-    <div> Run number: <input type="text" v-model="run_number_current"> Next:  <input type="text" v-model="run_number_next"></div>
-    <div> Comment: <input size="50" type="text" v-model="run_comment"> <button @click="clear()"> clear</button></div>
+    <h2 class="font-bold"> Expert mode </h2>
+    <div>
+      Run number: <input size="10" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" type="text" v-model="run_number_current">
+      Next:  <input  size="10" type="text"  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" v-model="run_number_next"></div>
+    <div> Comment: <input size="50"  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" type="text" v-model="run_comment"> <button  class="btn btn-blue" @click="clear()"> clear</button></div>
     <div> Start: {{daq_start_time}} </div>
     <div> Stop: {{daq_stop_time}} </div>
     <div>
-      <button @click='set_daq_start_time();publish_daqctl(["CONNECT","INIT TASK","RUN"],1)'> start </button>
-      <button @click='set_daq_stop_time();publish_daqctl(["STOP","RESET TASK","RESET DEVICE"],1)'> stop </button>
-      <button @click="daqctl_end()"> end </button>
+      <button class="btn btn-blue" @click='set_daq_start_time();publish_daqctl(["CONNECT","INIT TASK","RUN"],1)'> start </button> <span></span>
+      <button class="btn btn-blue" @click='set_daq_stop_time();publish_daqctl(["STOP","RESET TASK","RESET DEVICE"],1)'> stop </button> <span></span>
+      <button class="btn btn-blue" @click="daqctl_end()"> end </button>
     </div>
-    <h2> Expert mode </h2>
-    <div><button @click='publish_daqctl(["CONNECT"],1)'> connect </button></div>
-    <div><button @click='publish_daqctl(["INIT TASK"],1)'> init task </button></div>
-    <div><button @click='publish_daqctl(["RUN"],1)'> run </button></div>
-    <div><button @click='publish_daqctl(["STOP"],1)'> stop </button></div>
-    <div><button @click='publish_daqctl(["RESET TASK"],1)'> reset task </button></div>
-    <div><button @click='publish_daqctl(["RESET DEVICE"],1)'> reset device </button></div>
-</div>
+    <h2 class="font-bold"> Expert mode </h2>
+    <div>
+       <button class="btn btn-blue" @click='publish_daqctl(["CONNECT"],1)'> connect </button> <span></span>
+       <button class="btn btn-blue" @click='publish_daqctl(["INIT TASK"],1)'> init task </button> <span></span>
+       <button class="btn btn-blue" @click='publish_daqctl(["RUN"],1)'> run </button>
+    </div>
+    <div>
+       <button class="btn btn-blue" @click='publish_daqctl(["RESET DEVICE"],1)'> reset device </button> <span></span>
+       <button class="btn btn-blue" @click='publish_daqctl(["RESET TASK"],1)'> reset task </button> <span></span>
+       <button class="btn btn-blue" @click='publish_daqctl(["STOP"],1)'> stop </button>
+    </div>
+  </div>
   <div> {{wait_daqctl_state}} </div>  
   <div> {{state}} </div>  
   <div> {{status_msg}} </div>
   <div> State change start time : {{state_change_start_time_in_sec}}, Duration: {{state_change_duration_in_sec}} sec / Timeout {{state_change_timeout_in_sec}} sec</div>  
 </template>
+  <style>
+  .btn {
+    @apply font-bold py-2 px-4 rounded;
+  }
+  .btn-blue {
+    @apply bg-blue-500 text-white;
+  }
+  .btn-blue:hover {
+    @apply bg-blue-700;
+  }
+  </style>
 
 <script>
 import axios from 'axios'
