@@ -2,7 +2,7 @@
   <div>
     <h2 class="font-bold"> Expert mode </h2>
     <div>
-      Run number: <input size="10" class="" type="text" v-model="run_number_current">
+      Run number: <input size="10" class="ipt" type="text" v-model="run_number_current">
       Next:  <input  size="10" type="text" class="ipt" v-model="run_number_next"></div>
     <div> Comment: <input size="50" class="ipt" type="text" v-model="run_comment"> <button  class="btn btn-blue" @click="clear()"> clear</button></div>
     <div> Start: {{daq_start_time}} </div>
