@@ -1,4 +1,9 @@
 <template>
+  <h1>Metis Components</h1>
+  <div>
+   <NestDAQController></NestDAQController>
+   <NestDAQStatus></NestDAQStatus>
+  </div>
   <div>
     <p v-if="msg.length > 0">
       {{msg}}
@@ -9,13 +14,11 @@
     <input type="text" v-model="msg">
     <button @click="clear()">clear</button>
   </div>
-  <div>
-   <NestDAQStatus></NestDAQStatus>
-  </div>
 </template>
 
 <script>
 //import axios from 'axios'
+import NestDAQController from './components/NestDAQController.vue'
 import NestDAQStatus from './components/NestDAQStatus.vue'
 
 export default {
@@ -26,6 +29,7 @@ export default {
   },
   components: {
    NestDAQStatus,
+   NestDAQController
   },
   methods: {
     clear () {
