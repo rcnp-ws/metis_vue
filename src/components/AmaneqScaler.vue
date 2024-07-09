@@ -2,20 +2,32 @@
    <div>
       Scaler
       <LocalTimestamp></LocalTimestamp>
-      Remote : {{msg.timestamp}} at {{ msg.ip }}
-
+      <div v-if="isValid === true">
+         Remote : {{msg.timestamp}} at {{ msg.ip }}
+      </div>
+      <div v-else>{{ ip }} is not available <br/> {{ error }}</div>
 <!--
       <table>
          <tr v-for="scr in msg.scr" :key="scr.ch">
            <td>{{ scr.ch }}</td><td>{{ scr.val }}</td>
          </tr>
       </table>
--->      
-      <table>
-         <tr v-for="(scrcol,irow) in scrs" :key="irow">
-            <td v-for="(aScr,icol) in scrcol" :key="icol">{{ aScr }}</td>
-         </tr>
-      </table>
+-->   
+
+
+      <div class="table" v-if="isValid">
+         <table class="cell" v-for="irow in nCols" :key="irow">
+            <tr>
+               <th>Ch</th><th>Scaler</th>
+            </tr>
+            <tr v-for="idx in nRows" :key="idx">
+               <td class="ch" v-if="(irow-1) * nRows + (idx-1)<nTot"> {{ msg.scr[(irow-1) * nRows + (idx-1)].ch }} </td>
+               <td class="val" v-if="(irow-1) * nRows + (idx-1)<nTot"> {{ msg.scr[(irow-1) * nRows + (idx-1)].val }}</td>
+            </tr>
+         </table>
+      </div>
+
+
    </div>
 </template>
 
@@ -31,6 +43,8 @@ export default {
    },
    data() {
       return {
+         isValid: false,
+         error: "",
          msg: {"device":"IDLE"},
          nTot: 32,
          nCols: 1,
@@ -42,7 +56,8 @@ export default {
    methods: {
       update() {
          axios.get('http://localhost:8000/scaler/read/'+this.ip)
-        .then((response) => {
+         .then((response) => {
+             this.isValid = true;
             //console.log(response.data);
                this.msg = response.data;
                this.nTot = this.msg.scr.length;
@@ -63,6 +78,10 @@ export default {
                   this.nRows = 0;
                   this.nCols = 0;
                }
+            })
+            .catch((error) => {
+               this.isValid = false;
+               this.error = error;
             });
             setTimeout(() => { this.update(); }, 1000);
       }
@@ -80,9 +99,25 @@ div.state {
 border: 1px solid blue;
 }
 
+.table {
+	display:table;
+   border-spacing: 1rem;
+}
+.cell {
+	display:table-cell;
+   border: 1px solid;
+   
+}
 table {
   border-collapse: collapse;
   //width: 100%;
+}
+td.ch {
+   padding: 0.1rem;
+   width: 2rem;
+}
+td.val {
+   width: 8rem;
 }
 th,
 td {
