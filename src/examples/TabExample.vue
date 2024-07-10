@@ -14,7 +14,7 @@
     <h1 class="text-xl font-bold text-white mb-4 w-11/12 lg:w-10/12 mx-auto">
       Variant: Horizontal
     </h1>
-
+<!--
     <tab-container
       class="w-11/12 lg:w-10/12 mx-auto"
       :tabList="tabList"
@@ -25,7 +25,14 @@
       <template v-slot:tabPanel-3> <amaneq-scaler :ip=tabList[2]></amaneq-scaler> </template>
       <template v-slot:tabPanel-4> <amaneq-scaler :ip=tabList[3]></amaneq-scaler> </template>
     </tab-container>
-
+-->
+    <tab-container
+      class="w-11/12 lg:w-10/12 mx-auto"
+      :tabList="tabList"
+      variant="horizontal"
+>
+         <template v-for="ip,itab in tabList" :key="itab" #[`tabPanel-${itab+1}`]><amaneq-scaler :ip=[ip]></amaneq-scaler></template>
+      </tab-container>
     <div class="text-center py-12">
       <a
         href="https://lucaspezzano.medium.com/subscribe"
@@ -51,7 +58,17 @@ export default {
   },
   data() {
     return {
-      tabList: ["Tab 1", "Tab 2", "192.168.10.1", "192.168.10.2"],
+      tabList: ["192.168.2.160",
+      "192.168.2.161",
+      "192.168.2.162",
+      "192.168.2.163",
+      "192.168.2.164",
+      "192.168.2.165",
+      "192.168.2.166",
+      "192.168.2.167",
+      "192.168.2.168",
+      "192.168.2.169",
+      ]
     };
   },
 };

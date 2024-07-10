@@ -6,7 +6,7 @@
 
 
 <script>
-import NF from '../utilities/NumberFormat';
+import TS from '../utilities/Timestamp'
 export default {
    setup() {
       
@@ -16,20 +16,14 @@ export default {
          timestamp : "timestamp"
       }
    },
-   methods: {
-      update() {
-         const now = new Date();
-         const year = now.getFullYear();
-         const month = NF.zeroPadding(now.getMonth()+1,2)
-         const day =  NF.zeroPadding(now.getDate(),2)
-         const hh = NF.zeroPadding(now.getHours(),2)
-         const mm = NF.zeroPadding(now.getMinutes(),2)
-         const ss = NF.zeroPadding(now.getSeconds(),2)
-         const tzhh = NF.zeroPadding(Math.abs(now.getTimezoneOffset()/60),2)
-         const tzmm = NF.zeroPadding(Math.abs(now.getTimezoneOffset())%60,2)
+   computed: {
 
-         const tzstr =(now.getTimezoneOffset() < 0 ? "+" : "-") + tzhh + ":" + tzmm;
-         this.timestamp = year + "/" + month + "/" + day + " " + hh + ":" + mm + ":" + ss + " " + tzstr ;
+   },
+   methods: {
+
+      update() {
+         // const now = new Date();
+         this.timestamp = TS.strFromSec();
          setTimeout(() => { this.update(); }, 1000);
       }
    },
