@@ -1,14 +1,19 @@
 <template>
   <div>
-    <h2 class="font-bold"> NestDAQ Run Controller </h2>
-      <div> Next run number (read): {{run_number_read}} </div>
+    <h2 class="text-xl font-bold"> NestDAQ Run Controller </h2>
+       <div v-if="daq_state=='RUNNING'">
+          <div> Current run number (read): {{run_number_read}} </div>
+       </div>
+       <div v-else>
+          <div> Next run number (read): {{run_number_read}} </div>
+       </div>
       <div> Latest run number (read): {{run_number_latest}} </div>
       <div>
-      Run number (set): <input size="10" class="ipt" type="text" v-model="run_number_set"> <span></span>
+      Next run number (set): <input size="10" class="ipt" type="text" v-model="run_number_set"> <span></span>
      <span v-if="daq_state=='IDLE'&&daq_controllable==1">
          <button  class="btn btn-blue" @click="run_number_set_func()"> Set </button> <span></span>
       </span><span v-else>
-         <button  class="btn-disabled"> Set </button> <span></span>
+         <button  class="btn-blue-disabled"> Set </button> <span></span>
       </span>
          <button  class="btn btn-blue" @click="run_number_clear()"> Clear </button>
       </div>
@@ -18,7 +23,7 @@
       <span v-if="daq_state=='IDLE'&&daq_controllable==1">
          <button  class="btn btn-blue" @click="run_comment_set_func()"> Set </button> <span></span>
       </span><span v-else>
-         <button  class="btn-disabled"> Set </button> <span></span>
+         <button  class="btn-blue-disabled"> Set </button> <span></span>
       </span>
        <button  class="btn btn-blue" @click="run_comment_clear()"> Clear </button>
     </div>
@@ -26,56 +31,76 @@
     <div> Stop time: {{daq_stop_time}} </div>
     <div>
        <span v-if="daq_state=='IDLE'&&daq_controllable==1">
-          <button class="btn btn-blue" @click='daq_start()'> start </button> <span></span>
+          <button class="btn btn-blue" @click='daq_start()'> Start </button> <span></span>
        </span><span v-else>
-          <button class="btn-disabled"> start </button> <span></span>
+          <button class="btn btn-blue-disabled"> Start </button> <span></span>
        </span>
        <span v-if="daq_state=='RUNNING'&&daq_controllable==1">
-          <button class="btn btn-blue" @click='daq_stop()'> stop </button> <span></span>
+          <button class="btn btn-blue" @click='daq_stop()'> Stop </button> <span></span>
        </span><span v-else>
-          <button class="btn-disabled"> stop </button> <span></span>
+          <button class="btn btn-blue-disabled"> Stop </button> <span></span>
        </span>
-       <button class="btn btn-blue" @click="daqctl_end()"> end </button>
     </div>
-    <h2 class="font-bold"> Expert mode </h2>
+    <div>&nbsp;</div>
     <div>
+       <span class="text-xl font-bold"> Expert mode</span> <span></span>
+       <span><input type="checkbox" id="exp_mode" v-model="exp_mode_enabled">: </span>
+       <span v-if="exp_mode_enabled == true">Enabled</span>
+       <span v-else> Disabled</span>
+       </div>
+    <div v-if="exp_mode_enabled == true">
+    <div>
+       Idle ⊳ 
        <span v-if="daq_state=='IDLE'&&daq_controllable==1">
-          <button class="btn btn-blue" @click='publish_daqctl(["CONNECT"],1)'> connect </button> <span></span>
+          <button class="btn btn-gray" @click='publish_daqctl(["CONNECT"],1)'> connect </button> <span></span>
        </span><span v-else>
-          <button class="btn-disabled"> connect </button> <span></span>    
+          <button class="btn btn-gray-disabled"> connect </button> <span></span>    
        </span>
+        ⊳ Device Ready ⊳ 
        <span v-if="daq_state=='DEVICE READY'&&daq_controllable==1">
-         <button class="btn btn-blue" @click='publish_daqctl(["INIT TASK"],1)'> init task </button> <span></span>
+         <button class="btn btn-gray" @click='publish_daqctl(["INIT TASK"],1)'> init task </button> <span></span>
        </span><span v-else>
-         <button class="btn-disabled"> init task </button> <span></span>
+         <button class="btn btn-gray-disabled"> init task </button> <span></span>
        </span>
+        ⊳ Ready ⊳ 
        <span v-if="daq_state=='READY'&&daq_controllable==1">
-          <button class="btn btn-blue" @click='publish_daqctl(["RUN"],1)'> run </button>
+          <button class="btn btn-gray" @click='publish_daqctl(["RUN"],1)'> run </button>
        </span><span v-else>
-          <button class="btn-disabled"> run </button>
+          <button class="btn btn-gray-disabled"> run </button>
        </span>
+       ⊳ Running
     </div>
     <div>
+       Idle ⊲
        <span v-if="daq_state=='DEVICE READY'&&daq_controllable==1">
-          <button class="btn btn-blue" @click='publish_daqctl(["RESET DEVICE"],1)'> reset device </button> <span></span>
+          <button class="btn btn-gray" @click='publish_daqctl(["RESET DEVICE"],1)'> reset device </button> <span></span>
        </span><span v-else>
-          <button class="btn-disabled"> reset device </button> <span></span>
+          <button class="btn btn-gray-disabled"> reset device </button> <span></span>
        </span>
+       ⊲ Device Ready ⊲ 
        <span v-if="daq_state=='READY'&&daq_controllable==1">
-          <button class="btn btn-blue" @click='publish_daqctl(["RESET TASK"],1)'> reset task </button> <span></span>
+          <button class="btn btn-gray" @click='publish_daqctl(["RESET TASK"],1)'> reset task </button> <span></span>
        </span><span v-else>
-          <button class="btn-disabled"> reset task </button> <span></span>
+          <button class="btn btn-gray-disabled"> reset task </button> <span></span>
        </span>
+       ⊲ Ready ⊲
        <span v-if="daq_state=='RUNNING'&&daq_controllable==1">
-          <button class="btn btn-blue" @click='publish_daqctl(["STOP"],1)'> stop </button>
+          <button class="btn btn-gray" @click='publish_daqctl(["STOP"],1)'> stop </button>
        </span><span v-else>
-          <button class="btn-disabled"> stop </button>
+          <button class="btn btn-gray-disabled"> stop </button>
        </span>
+       ⊲ Running
     </div>
-  </div>
+  <div>Any state ⊳
+  <button class="btn btn-gray" @click="daqctl_end()"> End devices </button>
+  ⊳ Exitting
   <div> Requested DAQ state: {{wait_daqctl_state}} </div>
   <div> Current matched DAQ state: {{daq_state}} </div>
-  <div> State change start time : {{state_change_start_time_in_sec}}, Duration: {{state_change_duration_in_sec}} sec / Timeout: {{state_change_timeout_in_sec}} sec</div>
+  <div> State change start time (unix time): {{state_change_start_time_in_sec}}, Duration: {{state_change_duration_in_sec}} sec / Timeout: {{state_change_timeout_in_sec}} sec</div>
+  </div>
+  </div>
+  </div>
+  <div>&nbsp;</div>
 </template>
 
 <style>
@@ -88,8 +113,17 @@
   .btn-blue:hover {
     @apply bg-blue-700;
   }
-  .btn-disabled{
-    @apply bg-blue-500 text-white font-bold py-2 px-4 rounded opacity-50 cursor-not-allowed;
+  .btn-blue-disabled{
+    @apply bg-blue-500 text-white opacity-50 cursor-not-allowed;
+  }
+  .btn-gray {
+    @apply bg-gray-500 text-white;
+  }
+  .btn-gray:hover {
+    @apply bg-gray-700;
+  }
+  .btn-gray-disabled{
+    @apply bg-gray-500 text-white opacity-50 cursor-not-allowed;
   }
   .ipt {
     @apply bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500;
@@ -117,7 +151,8 @@ export default {
              daq_controllable: 1,
              daq_state: "",
              daq_start_time: "",
-             daq_stop_time: ""
+             daq_stop_time: "",
+             exp_mode_enabled: false     
       }
    },
    methods: {
@@ -250,6 +285,19 @@ export default {
                axios.get('http://ata03:8000/incr/run_info:run_number')
                .catch((error)=>{console.log(error.data);});
                this.update_run_number_set();
+            }
+            if (cmd_arr[0] == "RUN") {
+               axios.get('http://ata03:8000/get/run_info:run_number/')
+               .then((response) => {
+                  this.run_number_read = response.data["message"];
+               })
+               .catch((error)=>{
+                   console.log(error.data);
+               });
+               axios.get('http://ata03:8000/set/run_info:latest_run_number/'+this.run_number_read)
+               .catch((error)=>{
+                   console.log(error.data);
+               });
             }
             if (cmd_arr[0] == "CONNECT") {
               this.wait_daqctl_state = "DEVICE READY";
