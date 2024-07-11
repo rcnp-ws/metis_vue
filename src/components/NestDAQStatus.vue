@@ -26,7 +26,7 @@ export default {
    },
    methods: {
       update() {
-         axios.get('http://localhost:8000/nestdaq/status/')
+         axios.get('http://ata03:8000/nestdaq/status/')
         .then((response) => {
             //console.log(response.data);
                 this.msg = response.data;
