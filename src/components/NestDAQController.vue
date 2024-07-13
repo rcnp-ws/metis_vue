@@ -324,6 +324,11 @@ export default {
          }
       },
       key_set(key){
+         if (key=="run_info:run_comment"){
+            if (this.key_val_set[key].length > 255) {
+               this.key_val_set[key] = this.key_val_set[key].substring(0, 255);
+            }
+         }
          axios.get(this.fastapi_uri+'/set/'+key+'/'+this.key_val_set[key]+'/')
          .catch((error)=>{console.log(error.data);});
       },
