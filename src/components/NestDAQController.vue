@@ -1,111 +1,183 @@
 <template>
-  <div>
-    <h2 class="text-xl font-bold"> NestDAQ Run Controller </h2>
-       <div v-if="daq_state=='RUNNING'">
-          <div> Current run number (read): {{run_number_read}} </div>
-       </div>
-       <div v-else>
-          <div> Next run number (read): {{run_number_read}} </div>
-       </div>
-      <div> Latest run number (read): {{run_number_latest}} </div>
+   <h2 class="text-xl font-bold"> NestDAQ Run Controller </h2>
+   <div> DAQ status: {{daq_state}} </div>
+   <div v-if="daq_state=='RUNNING'">
+      <div> Current run number (read): {{key_val_read['run_info:run_number']}} </div>
+   </div><div v-else>
+      <div> Next run number (read): {{key_val_read['run_info:run_number']}} </div>
+   </div>
+   <div> Latest run number (read): {{key_val_read['run_info:latest_run_number']}} </div>
+   <div>
+      Next run number (set): <input size="10" class="inpt" type="text" v-model="key_val_set['run_info:run_number']"> <span></span>
+      <span v-if="(daq_state=='IDLE'||daq_state=='NO PROCESS')&&daq_controllable==true">
+         <button  class="btn btn-blue" @click="key_set('run_info:run_number_set')"> Set </button> <span></span>
+      </span><span v-else>
+         <button  class="btn btn-blue-disabled"> Set </button> <span></span>
+      </span>
+      <button  class="btn btn-blue" @click="key_clear('run_info:run_number_set')"> Clear </button>
+   </div>
+   <div> Run comment (read): {{key_val_read['run_info:run_comment']}} </div>
+   <div>
+      Run comment (set): <input size="50" class="inpt" type="text" v-model="key_val_set['run_info:run_comment']"> <span></span>
+      <span v-if="(daq_state=='IDLE'||daq_state=='NO PROCESS')&&daq_controllable==true">
+         <button  class="btn btn-blue" @click="key_set('run_info:run_comment')"> Set </button> <span></span>
+      </span><span v-else>
+         <button  class="btn btn-blue-disabled"> Set </button> <span></span>
+      </span>
+      <button  class="btn btn-blue" @click="key_clear('run_info:run_comment')"> Clear </button>
+   </div>
+   <div> Start time: {{daq_start_time}} </div>
+   <div> Stop time: {{daq_stop_time}} </div>
+   <div>
+      <span v-if="daq_state=='IDLE'&&daq_controllable==true">
+         <button class="btn btn-blue" @click='daq_start()'> Start </button> <span></span>
+      </span><span v-else>
+         <button class="btn btn-blue-disabled"> Start </button> <span></span>
+      </span>
+      <span v-if="daq_state=='RUNNING'&&daq_controllable==true">
+         <button class="btn btn-blue" @click='daq_stop()'> Stop </button> <span></span>
+      </span><span v-else>
+         <button class="btn btn-blue-disabled"> Stop </button> <span></span>
+      </span>
+   </div>
+   <div>&nbsp;</div>
+   <div>
+      <span class="text-xl font-bold"> Expert mode</span> <span></span>
+      <span><input type="checkbox" id="exp_mode" v-model="exp_mode_enabled">: </span>
+      <span v-if="exp_mode_enabled == true">Enabled</span>
+      <span v-else> Disabled</span>
+   </div>
+   <div v-if="exp_mode_enabled == true">
+      <div>&nbsp;</div>
+      <div class="text-l font-bold"> Expert's controller</div>
+      <table style="text-align: center">
+         <tr>
+            <td> Idle ⊳ </td>
+            <td> <button class="w-24 btn btn-gray" @click='state_change(["PRE START"])'> Pre start </button> </td>
+            <td> ⊳ Idle ⊳ </td>
+            <td>
+               <span v-if="daq_state=='IDLE'&&daq_controllable==true">
+                  <button class="w-24 btn btn-gray" @click='state_change(["CONNECT"])'> Connect </button> <span></span>
+               </span><span v-else>
+                  <button class="w-24 btn btn-gray-disabled"> Connect </button> <span></span>    
+               </span>
+            </td>
+            <td>  ⊳ Device Ready ⊳ </td>
+            <td>
+               <span v-if="daq_state=='DEVICE READY'&&daq_controllable==true">
+                  <button class="w-24 btn btn-gray" @click='state_change(["INIT TASK"])'> Init task </button> <span></span>
+               </span><span v-else>
+                  <button class="w-24 btn btn-gray-disabled"> Init task </button> <span></span>
+               </span>
+            </td>
+            <td> ⊳ Ready ⊳ </td>
+            <td>
+               <span v-if="daq_state=='READY'&&daq_controllable==true">
+                  <button class="w-24 btn btn-gray" @click='state_change(["RUN"])'> Run </button>
+               </span><span v-else>
+                  <button class="w-24 btn btn-gray-disabled"> Run </button>
+               </span>
+            </td>
+            <td> ⊳ Running ⊳ </td>
+            <td> <button class="w-24 btn btn-gray" @click='state_change(["POST START"])'> Post start </button> </td>
+            <td> ⊳ Running </td>
+         </tr>
+         <tr>
+            <td> Idle ⊲ </td>
+            <td> <button class="w-24 btn btn-gray" @click='state_change(["POST STOP"])'> Post stop </button> </td>
+            <td> ⊲ Idle ⊲ </td>
+            <td>
+               <span v-if="daq_state=='DEVICE READY'&&daq_controllable==true">
+                  <button class="w-24 btn btn-gray" @click='state_change(["RESET DEVICE"])'> Rst dev </button> <span></span>
+               </span><span v-else>
+                  <button class="w-24 btn btn-gray-disabled"> Rst dev </button> <span></span>
+               </span>
+            </td>
+            <td> ⊲ Device Ready ⊲ </td>
+            <td>
+               <span v-if="daq_state=='READY'&&daq_controllable==true">
+                  <button class="w-24 btn btn-gray" @click='state_change(["RESET TASK"])'> Rst task </button> <span></span>
+               </span><span v-else>
+                  <button class="w-24 btn btn-gray-disabled">Rst task</button> <span></span>
+               </span>
+            </td>
+            <td> ⊲ Ready ⊲ </td>
+            <td>
+               <span v-if="daq_state=='RUNNING'&&daq_controllable==true">
+                  <button class="w-24 btn btn-gray" @click='state_change(["STOP"])'> Stop </button>
+               </span><span v-else>
+                  <button class="w-24 btn btn-gray-disabled"> Stop </button>
+               </span>
+            </td>
+            <td> ⊲ Running ⊲ </td>
+            <td> <button class="w-24 btn btn-gray" @click='state_change(["PRE STOP"])'> Pre stop </button> </td>
+            <td> ⊲ Running </td>
+         </tr>
+      </table>
       <div>
-      Next run number (set): <input size="10" class="ipt" type="text" v-model="run_number_set"> <span></span>
-     <span v-if="daq_state=='IDLE'&&daq_controllable==1">
-         <button  class="btn btn-blue" @click="run_number_set_func()"> Set </button> <span></span>
-      </span><span v-else>
-         <button  class="btn-blue-disabled"> Set </button> <span></span>
-      </span>
-         <button  class="btn btn-blue" @click="run_number_clear()"> Clear </button>
+         Any state ⊳ 
+         <button class="btn btn-gray" @click='state_change(["END"])'> End devices </button>
+          ⊳ Exitting
       </div>
-    <div> Run comment (read): {{run_comment_read}} </div>
-    <div>
-       Run comment (set): <input size="50" class="ipt" type="text" v-model="run_comment_set"> <span></span>
-      <span v-if="daq_state=='IDLE'&&daq_controllable==1">
-         <button  class="btn btn-blue" @click="run_comment_set_func()"> Set </button> <span></span>
-      </span><span v-else>
-         <button  class="btn-blue-disabled"> Set </button> <span></span>
-      </span>
-       <button  class="btn btn-blue" @click="run_comment_clear()"> Clear </button>
-    </div>
-    <div> Start time: {{daq_start_time}} </div>
-    <div> Stop time: {{daq_stop_time}} </div>
-    <div>
-       <span v-if="daq_state=='IDLE'&&daq_controllable==1">
-          <button class="btn btn-blue" @click='daq_start()'> Start </button> <span></span>
-       </span><span v-else>
-          <button class="btn btn-blue-disabled"> Start </button> <span></span>
-       </span>
-       <span v-if="daq_state=='RUNNING'&&daq_controllable==1">
-          <button class="btn btn-blue" @click='daq_stop()'> Stop </button> <span></span>
-       </span><span v-else>
-          <button class="btn btn-blue-disabled"> Stop </button> <span></span>
-       </span>
-    </div>
-    <div>&nbsp;</div>
-    <div>
-       <span class="text-xl font-bold"> Expert mode</span> <span></span>
-       <span><input type="checkbox" id="exp_mode" v-model="exp_mode_enabled">: </span>
-       <span v-if="exp_mode_enabled == true">Enabled</span>
-       <span v-else> Disabled</span>
-       </div>
-    <div v-if="exp_mode_enabled == true">
-    <div>
-       Idle ⊳ 
-       <span v-if="daq_state=='IDLE'&&daq_controllable==1">
-          <button class="btn btn-gray" @click='publish_daqctl(["CONNECT"],1)'> connect </button> <span></span>
-       </span><span v-else>
-          <button class="btn btn-gray-disabled"> connect </button> <span></span>    
-       </span>
-        ⊳ Device Ready ⊳ 
-       <span v-if="daq_state=='DEVICE READY'&&daq_controllable==1">
-         <button class="btn btn-gray" @click='publish_daqctl(["INIT TASK"],1)'> init task </button> <span></span>
-       </span><span v-else>
-         <button class="btn btn-gray-disabled"> init task </button> <span></span>
-       </span>
-        ⊳ Ready ⊳ 
-       <span v-if="daq_state=='READY'&&daq_controllable==1">
-          <button class="btn btn-gray" @click='publish_daqctl(["RUN"],1)'> run </button>
-       </span><span v-else>
-          <button class="btn btn-gray-disabled"> run </button>
-       </span>
-       ⊳ Running
-    </div>
-    <div>
-       Idle ⊲
-       <span v-if="daq_state=='DEVICE READY'&&daq_controllable==1">
-          <button class="btn btn-gray" @click='publish_daqctl(["RESET DEVICE"],1)'> reset device </button> <span></span>
-       </span><span v-else>
-          <button class="btn btn-gray-disabled"> reset device </button> <span></span>
-       </span>
-       ⊲ Device Ready ⊲ 
-       <span v-if="daq_state=='READY'&&daq_controllable==1">
-          <button class="btn btn-gray" @click='publish_daqctl(["RESET TASK"],1)'> reset task </button> <span></span>
-       </span><span v-else>
-          <button class="btn btn-gray-disabled"> reset task </button> <span></span>
-       </span>
-       ⊲ Ready ⊲
-       <span v-if="daq_state=='RUNNING'&&daq_controllable==1">
-          <button class="btn btn-gray" @click='publish_daqctl(["STOP"],1)'> stop </button>
-       </span><span v-else>
-          <button class="btn btn-gray-disabled"> stop </button>
-       </span>
-       ⊲ Running
-    </div>
-  <div>Any state ⊳
-  <button class="btn btn-gray" @click="daqctl_end()"> End devices </button>
-  ⊳ Exitting
-  <div> Requested DAQ state: {{wait_daqctl_state}} </div>
-  <div> Current matched DAQ state: {{daq_state}} </div>
-  <div> State change start time (unix time): {{state_change_start_time_in_sec}}, Duration: {{state_change_duration_in_sec}} sec / Timeout: {{state_change_timeout_in_sec}} sec</div>
-  </div>
-  </div>
-  </div>
-  <div>&nbsp;</div>
+      <div> Requested DAQ state: {{wait_daqctl_state}} </div>
+      <div> State change start time (unix time): {{state_change_start_time_in_sec}}, Duration: {{state_change_duration_in_sec}} sec / Timeout: {{state_change_timeout_in_sec}} sec</div>
+      <div>&nbsp;</div>
+      <div class="text-l font-bold"> Hook scripts</div>
+      <table>
+         <tr><td style="vertical-align: top"> Pre-start script return: </td><td> <pre>{{hook_return['run_info:pre_start_script']}}</pre>  </td><td></td></tr>
+         <tr><td style="vertical-align: top"> Post-start script return: </td><td> <pre>{{hook_return['run_info:post_start_script']}}</pre> </td><td></td></tr>
+         <tr><td style="vertical-align: top"> Pre-stop script return:  </td><td> <pre>{{hook_return['run_info:pre_stop_script']}}</pre>   </td><td></td></tr>
+         <tr><td style="vertical-align: top"> Post-stop script return: </td><td> <pre>{{hook_return['run_info:post_stop_script']}}</pre>  </td><td></td></tr>
+         <tr><td> &nbsp; </td><td>&nbsp; </td></tr>
+         <tr><td> Pre-start scirpt (read): </td><td> {{key_val_read['run_info:pre_start_script']}}  </td>
+            <td> <button class="btn btn-gray" @click="exec_hook_script('run_info:pre_start_script')"> Run </button> <span></span> </td></tr>
+         <tr><td> Post-start scirpt (read): </td><td> {{key_val_read['run_info:post_start_script']}} </td>
+            <td> <button class="btn btn-gray" @click="exec_hook_script('run_info:post_start_script')"> Run </button> <span></span></td></tr>
+         <tr><td> Pre-stop scirpt (read):  </td><td> {{key_val_read['run_info:pre_stop_script']}}   </td>
+            <td> <button class="btn btn-gray" @click="exec_hook_script('run_info:pre_stop_script')"> Run </button> <span></span></td></tr>
+         <tr><td> Post-stop scirpt (read): </td><td> {{key_val_read['run_info:post_stop_script']}}  </td>
+            <td> <button class="btn btn-gray" @click="exec_hook_script('run_info:post_stop_script')"> Run </button> <span></span></td></tr>
+         <tr><td> &nbsp; </td><td> &nbsp; </td></tr>
+         <tr><td> Pre-start script (set): </td>
+            <td>
+               <input size="30" class="inpt" type="text" v-model="key_val_set['run_info:pre_start_script']"> <span></span>
+           </td><td>
+               <button class="btn btn-gray" @click="key_set('run_info:pre_start_script')"> Set </button> <span></span>
+               <button class="btn btn-gray" @click="key_clear('run_info:pre_start_script')"> Clear </button> <span></span>
+            </td>
+         </tr>
+         <tr><td> Post-start script (set):  </td>
+            <td>
+               <input size="30" class="inpt" type="text" v-model="key_val_set['run_info:post_start_script']"> <span></span>
+            </td><td>
+               <button class="btn btn-gray" @click="key_set('run_info:post_start_script')"> Set </button> <span></span>
+               <button class="btn btn-gray" @click="key_clear('run_info:post_start_script')"> Clear </button> <span></span>
+            </td>
+         </tr>
+         <tr><td> Pre-stop script (set): </td>
+            <td>
+               <input size="30" class="inpt" type="text" v-model="key_val_set['run_info:pre_stop_script']"> <span></span>
+            </td><td>
+               <button class="btn btn-gray" @click="key_set('run_info:pre_stop_script')"> Set </button> <span></span>
+               <button class="btn btn-gray" @click="key_clear('run_info:pre_stop_script')"> Clear </button> <span></span>
+            </td>
+         </tr>
+         <tr><td> Post-stop script (set): </td>
+            <td>
+               <input size="30" class="inpt" type="text" v-model="key_val_set['run_info:post_stop_script']"> <span></span>
+            </td><td>
+               <button class="btn btn-gray" @click="key_set('run_info:post_stop_script')"> Set </button> <span></span>
+               <button class="btn btn-gray" @click="key_clear('run_info:post_stop_script')"> Clear </button> <span></span>
+            </td>
+         </tr>
+      </table>
+   </div>
+   <div>&nbsp;</div>
 </template>
 
 <style>
   .btn {
-    @apply font-bold py-2 px-4 rounded;
+    @apply font-bold py-1 px-2 rounded;
   }
   .btn-blue {
     @apply bg-blue-500 text-white;
@@ -125,8 +197,8 @@
   .btn-gray-disabled{
     @apply bg-gray-500 text-white opacity-50 cursor-not-allowed;
   }
-  .ipt {
-    @apply bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500;
+  .inpt {
+    @apply bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-1.5 w-96 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500;
   }
 </style>
 
@@ -136,212 +208,206 @@ import axios from 'axios'
 export default {
    data() {
       return {
-             run_number_read: 0,
-             run_number_set: 0,
-             run_number_latest: 0,
-             run_comment_read: "default run comment",
-             run_comment_set: "default run comment",
-             status_msg: "",
-             state_change_start_time_in_sec: 0,
-             state_change_duration_in_sec: 0,
-             state_change_timeout_in_sec: 20,
-             state_change_error: 0,
-             state_change_done: 0,
-             wait_daqctl_state: "IDLE",
-             daq_controllable: 1,
-             daq_state: "",
-             daq_start_time: "",
-             daq_stop_time: "",
-             exp_mode_enabled: false     
+         fastapi_uri: "http://ata03:8000",
+         state_change_start_time_in_sec: 0,
+         state_change_duration_in_sec: 0,
+         state_change_timeout_in_sec: 20,
+         state_change_error: false,
+         wait_daqctl_state: "IDLE",
+         daq_controllable: true,
+         daq_state: "",
+         daq_start_time: "",
+         daq_stop_time: "",
+         exp_mode_enabled: false,
+         daq_state_destination: {
+            "CONNECT"      : "DEVICE READY",
+            "INIT TASK"    : "READY",
+            "RUN"          : "RUNNING",
+            "STOP"         : "READY",
+            "RESET TASK"   : "DEVICE READY",
+            "RESET DEVICE" : "IDLE",
+            "END"          : "NO PROCESS"
+         },
+         key_list: [
+            "run_info:pre_start_script",
+            "run_info:post_start_script",
+            "run_info:pre_stop_script",
+            "run_info:post_stop_script" ,
+            "run_info:run_number",
+            "run_info:latest_run_number",
+            "run_info:run_comment"
+         ],
+         key_val_read: {
+            "run_info:pre_start_script"  : "",
+            "run_info:post_start_script" : "",
+            "run_info:pre_stop_script"   : "",
+            "run_info:post_stop_script"  : "",
+            "run_info:run_number"        : "",
+            "run_info:latest_run_number" : "",
+            "run_info:run_comment"       : ""
+         },
+         key_val_set: {
+            "run_info:pre_start_script"  : "",
+            "run_info:post_start_script" : "",
+            "run_info:pre_stop_script"   : "",
+            "run_info:post_stop_script"  : "",
+            "run_info:run_number"        : "",
+            "run_info:latest_run_number" : "",
+            "run_info:run_comment"       : ""
+         },
+         hook_return: {
+            "run_info:pre_start_script"  : "",
+            "run_info:post_start_script" : "",
+            "run_info:pre_stop_script"   : "",
+            "run_info:post_stop_script"  : ""
+         },
+         hook_cmd_key: {
+            "PRE START"   : "run_info:pre_start_script",
+            "POST START"  : "run_info:post_start_script",
+            "PRE STOP"    : "run_info:pre_stop_script",
+            "POST STOP"   : "run_info:post_stop_script"
+         }
       }
    },
    methods: {
-      daq_start(){
-         this.daq_start_time = new Date();
-         this.daq_stop_time = "";
-         this.publish_daqctl(["CONNECT","INIT TASK","RUN"],1)
-      },
-      daq_stop(){
-         this.daq_stop_time = new Date();
-         this.publish_daqctl(["STOP","RESET TASK","RESET DEVICE"],1);
-      },
       update() {
-        this.check_daq_state();
-        axios.get('http://ata03:8000/get/run_info:run_number/')
-        .then((response) => {
-           this.run_number_read = response.data["message"];
-        })
-        .catch((error)=>{
-            console.log(error.data);
-        });
-        axios.get('http://ata03:8000/get/run_info:latest_run_number/')
-        .then((response) => {
-                this.run_number_latest = response.data["message"];
-        })
-        .catch((error)=>{
-            console.log(error.data);
-        });
-        axios.get('http://ata03:8000/nestdaq/run_comment/')
-        .then((response) => {
-                this.run_comment_read = response.data;
-        })
-        .catch((error)=>{
-            console.log(error.data);
-        });
-        axios.get('http://ata03:8000/nestdaq/status/')
-        .then((response) => {
-            //console.log(response.data);
-                this.status_msg = response.data;
-        })
-	.catch((error)=>{
-            console.log(error.data);
-        });
-        setTimeout(() => { this.update(); }, 1000);
-      },
-      update_run_number_set(){
-         axios.get('http://ata03:8000/get/run_info:run_number/')
-         .then((response) => {
-            this.run_number_set = response.data["message"];
-         })
-         .catch((error)=>{
-             console.log(error.data);
-         });
-      },
-      update_run_comment_set(){
-         axios.get('http://ata03:8000/get/run_info:run_comment/')
-         .then((response) => {
-            this.run_comment_set = response.data["message"];
-         })
-         .catch((error)=>{
-             console.log(error.data);
-         });
+         this.check_daq_state();
+         for (let key in this.key_list){
+            this.key_read(this.key_list[key]);
+         }
+         setTimeout(() => { this.update(); }, 1000);
       },
       check_daq_state(){
-         if (this.status_msg.length == 0) {
-            this.daq_state = "";
-         }
-         let mismatch_flag = 0;
-         for (let key in this.status_msg){
-           if (this.status_msg[key] != Object.values(this.status_msg)[0]) {
-               mismatch_flag = 1;
-            }
-         }
-         if(mismatch_flag == 0){
-            this.daq_state = Object.values(this.status_msg)[0];
-         }else{
-            this.daq_state = "";
-         }
+        axios.get(this.fastapi_uri+'/nestdaq/status/')
+        .then((response) => {
+           let res = response.data;
+           if (Object.keys(res).length == 0) {
+              this.daq_state = "NO PROCESS";
+              return;
+           }
+           let mismatch_flag = false;
+           for (let key in res){
+             if (res[key] != Object.values(res)[0]) {
+                 mismatch_flag = true;
+              }
+           }
+           if(mismatch_flag == false){
+              this.daq_state = Object.values(res)[0];
+           }else{
+              this.daq_state = "";
+           }
+        }).catch((error)=>{console.log(error.data);});
+      },
+      key_set(key){
+         axios.get(this.fastapi_uri+'/set/'+key+'/'+this.key_val_set[key]+'/')
+         .catch((error)=>{console.log(error.data);});
+      },
+      key_clear(key){
+         this.key_val_set[key] = "";
+      },
+      key_read(key){
+         axios.get(this.fastapi_uri+'/get/'+key+'/')
+         .then((response) => {
+            this.key_val_read[key] = response.data["message"];
+         }).catch((error)=>{console.log(error.data);});
+      },
+      key_init(key){
+         axios.get(this.fastapi_uri+'/get/'+key+'/')
+         .then((response) => {
+            this.key_val_set[key] = response.data["message"];
+         }).catch((error)=>{console.log(error.data);});
+      },
+      daq_start(){
+         this.state_change(["PRE START","CONNECT","INIT TASK","RUN","POST START"]);
+      },
+      daq_stop(){
+         this.state_change(["PRE STOP", "STOP","RESET TASK","RESET DEVICE", "POST STOP"]);
+      },
+      exec_hook_script(key){
+         return new Promise ((resolve, reject) => {
+            axios.get(this.fastapi_uri+'/get/'+key+'/')
+            .then((response) => {
+               let res = response.data["message"];
+               axios.get(this.fastapi_uri+'/syscmd/exec/'+res+'/')
+               .then((response) => {
+                  this.hook_return[key] = response.data["message"];
+                  resolve();  
+               }).catch((error)=>{console.log(error.data); reject();});
+            }).catch((error)=>{console.log(error.data); reject();});
+         })
       },
       wait_for_state_change(){
-        this.state_change_duration_in_sec = parseInt(Date.now() / 1000 - this.state_change_start_time_in_sec);
-        if (this.state_change_duration_in_sec >= this.state_change_timeout_in_sec) {
-           this.state_change_error = 1;
-        }else{
-          let mismatch_flag = 0;
-          for (let key in this.status_msg){
-            if (this.status_msg[key] != this.wait_daqctl_state) {
-               mismatch_flag = 1;
+         return new Promise ((resolve, reject) => {
+            this.state_change_duration_in_sec = parseInt(Date.now() / 1000 - this.state_change_start_time_in_sec);
+            if (this.state_change_duration_in_sec >= this.state_change_timeout_in_sec) {
+               reject();
+            }else{
+               if (this.daq_state != this.wait_daqctl_state) {
+                  setTimeout(()=>{ this.wait_for_state_change().then(()=>{resolve();}).catch(()=>{reject();}); }, 1000);
+               }else{
+                  resolve();
+               }
             }
-          }
-          if (mismatch_flag == 1) {
-             setTimeout(() => { this.wait_for_state_change(); }, 1000);
-          }else{
-             this.state_change_done = 1;
-          }
-        }
+         })
       },
-      run_number_clear(){
-         this.run_number_set = "";
-      },
-      run_number_set_func(){
-         axios.get('http://ata03:8000/set/run_info:run_number/'+this.run_number_set)
-            .catch((error)=>{
-            console.log(error.data);
-         });
-      },
-      run_comment_clear(){
-        this.run_comment_set = "";
-      },
-      run_comment_set_func(){
-	axios.get('http://ata03:8000/set/run_info:run_comment/'+this.run_comment_set)
-            .catch((error)=>{
-            console.log(error.data);
-        });
-      },
-      publish_daqctl(cmd_arr, publish_flag){
-         this.daq_controllable = 0;
+      state_change(cmd_arr){
+         this.daq_controllable = false;
+         this.state_change_error = false;
          if (cmd_arr.length == 0) {
-            this.daq_controllable = 1;
+            this.daq_controllable = true;
             return;
          }
-         if (publish_flag == 1) {
-            let daqctl_chnl = "daqctl";
-            let daqctl_msg = '{"command":"change_state","value":"'+cmd_arr[0]+'","services":["all"],"instances":["all"]}';
-            axios.get('http://ata03:8000/publish/'+daqctl_chnl+'/'+daqctl_msg)
-            .catch((error)=>{
-              console.log(error.data);
-            });
-            if (cmd_arr[0] == "STOP") {
-               axios.get('http://ata03:8000/incr/run_info:run_number')
-               .catch((error)=>{console.log(error.data);});
-               this.update_run_number_set();
-            }
-            if (cmd_arr[0] == "RUN") {
-               axios.get('http://ata03:8000/get/run_info:run_number/')
-               .then((response) => {
-                  this.run_number_read = response.data["message"];
-               })
-               .catch((error)=>{
-                   console.log(error.data);
-               });
-               axios.get('http://ata03:8000/set/run_info:latest_run_number/'+this.run_number_read)
-               .catch((error)=>{
-                   console.log(error.data);
-               });
-            }
-            if (cmd_arr[0] == "CONNECT") {
-              this.wait_daqctl_state = "DEVICE READY";
-            }else if (cmd_arr[0] == "INIT TASK") {
-              this.wait_daqctl_state = "READY";
-            }else if (cmd_arr[0] == "RUN") {
-              this.wait_daqctl_state = "RUNNING";
-            }else if (cmd_arr[0] == "STOP") {
-              this.wait_daqctl_state = "READY";
-            }else if (cmd_arr[0] == "RESET TASK") {
-              this.wait_daqctl_state = "DEVICE READY";
-            }else if (cmd_arr[0] == "RESET DEVICE") {
-              this.wait_daqctl_state = "IDLE";
-            }
-            this.state_change_error = 0;
-            this.state_change_done = 0;
-            this.state_change_start_time_in_sec = parseInt(Date.now() / 1000);
-            this.wait_for_state_change();
-            setTimeout(() => { this.publish_daqctl(cmd_arr, 0); }, 1000);
-         }else{
-            if (this.state_change_error == 1) {
-               return;
-            }
-            if (this.state_change_done == 0) {
-               setTimeout(() => { this.publish_daqctl(cmd_arr, 0); }, 1000);
-            }else{
-               cmd_arr.shift();
-               setTimeout(() => { this.publish_daqctl(cmd_arr, 1); }, 1000);
-            }
+         if (cmd_arr[0] == "STOP") {
+            this.daq_stop_time = new Date();
+            axios.get(this.fastapi_uri+'/incr/run_info:run_number')
+            .catch((error)=>{console.log(error.data);});
          }
-      },
-      daqctl_end(){
-         let daqctl_chnl = "daqctl";
-         let daqctl_msg = '{"command":"change_state","value":"END","services":["all"],"instances":["all"]}';
-         axios.get('http://ata03:8000/publish/'+daqctl_chnl+'/'+daqctl_msg)
-         .catch((error)=>{
-            console.log(error.data);
-         });
+         if (cmd_arr[0] == "RUN") {
+            this.daq_start_time = new Date();
+            this.daq_stop_time = "";
+            axios.get(this.fastapi_uri+'/get/run_info:run_number/')
+            .then((response) => {
+               let res_run_number = response.data["message"];
+               axios.get(this.fastapi_uri+'/set/run_info:latest_run_number/'+res_run_number)
+               .catch((error)=>{console.log(error.data);});
+            }).catch((error)=>{console.log(error.data);});
+         }
+         if ((cmd_arr[0] == "PRE START") || (cmd_arr[0] == "POST START") ||
+             (cmd_arr[0] == "PRE STOP")  || (cmd_arr[0] == "POST STOP")  ) {
+            this.exec_hook_script(this.hook_cmd_key[cmd_arr[0]])
+            .then(()=>{
+               cmd_arr.shift();
+               this.state_change(cmd_arr);
+            }).catch((error)=>{
+               this.state_change_error = true;
+               console.log(error.data);
+            });
+         }else{
+            let daqctl_msg = '{"command":"change_state","value":"'+cmd_arr[0]+'","services":["all"],"instances":["all"]}';
+            axios.get(this.fastapi_uri+'/publish/daqctl/'+daqctl_msg)
+            .then(()=>{
+               this.wait_daqctl_state = this.daq_state_destination[cmd_arr[0]];
+               this.state_change_start_time_in_sec = parseInt(Date.now() / 1000);
+               this.wait_for_state_change().then(()=>{
+                  cmd_arr.shift();
+                  this.state_change(cmd_arr);
+               }).catch((error)=>{
+                  this.state_change_error = true;
+                  console.log(error.data);
+               });
+            }).catch((error)=>{
+               this.state_change_error = true;
+               console.log(error.data);
+            });
+         }
       }
    },
    mounted() {
       this.update();
-      this.update_run_number_set();
-      this.update_run_comment_set();  
+      for (let key in this.key_list){
+        console.log(key);
+        this.key_init(this.key_list[key]);
+      }
    }
 }
 </script>
