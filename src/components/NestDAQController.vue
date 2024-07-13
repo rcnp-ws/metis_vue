@@ -8,7 +8,7 @@
    </div>
    <div> Latest run number (read): {{key_val_read['run_info:latest_run_number']}} </div>
    <div>
-      Next run number (set): <input size="10" class="inpt" type="text" v-model="key_val_set['run_info:run_number']"> <span></span>
+      Next run number (set): <input size="5" class="inpt" type="text" v-model="key_val_set['run_info:run_number']"> <span></span>
       <span v-if="(daq_state=='IDLE'||daq_state=='NO PROCESS')&&daq_controllable==true">
          <button  class="btn btn-blue" @click="key_set('run_info:run_number_set')"> Set </button> <span></span>
       </span><span v-else>
@@ -18,7 +18,7 @@
    </div>
    <div> Run comment (read): {{key_val_read['run_info:run_comment']}} </div>
    <div>
-      Run comment (set): <input size="50" class="inpt" type="text" v-model="key_val_set['run_info:run_comment']"> <span></span>
+      Run comment (set): <input size="70" class="inpt" type="text" v-model="key_val_set['run_info:run_comment']"> <span></span>
       <span v-if="(daq_state=='IDLE'||daq_state=='NO PROCESS')&&daq_controllable==true">
          <button  class="btn btn-blue" @click="key_set('run_info:run_comment')"> Set </button> <span></span>
       </span><span v-else>
@@ -28,6 +28,11 @@
    </div>
    <div> Start time: {{daq_start_time}} </div>
    <div> Stop time: {{daq_stop_time}} </div>
+   <div>
+      <span>Auto run change: </span>
+      <span v-if="auto_run_change_mode_enabled == true">Enabled, Elapsed time: {{run_elapsed_time}} sec / Duration: {{key_val_read['run_info:auto_run_change_dur']}} sec</span>
+      <span v-else> Disabled</span>
+   </div>
    <div>
       <span v-if="daq_state=='IDLE'&&daq_controllable==true">
          <button class="btn btn-blue" @click='daq_start()'> Start </button> <span></span>
@@ -43,11 +48,11 @@
    <div>&nbsp;</div>
    <div>
       <span class="text-xl font-bold"> Expert mode</span> <span></span>
-      <span><input type="checkbox" id="exp_mode" v-model="exp_mode_enabled">: </span>
-      <span v-if="exp_mode_enabled == true">Enabled</span>
+      <span><input type="checkbox" v-model="expert_mode_enabled">: </span>
+      <span v-if="expert_mode_enabled == true">Enabled</span>
       <span v-else> Disabled</span>
    </div>
-   <div v-if="exp_mode_enabled == true">
+   <div v-if="expert_mode_enabled == true">
       <div>&nbsp;</div>
       <div class="text-l font-bold"> Expert's controller</div>
       <table style="text-align: center">
@@ -119,8 +124,20 @@
          <button class="btn btn-gray" @click='state_change(["END"])'> End devices </button>
           ⊳ Exitting
       </div>
-      <div> Requested DAQ state: {{wait_daqctl_state}} </div>
-      <div> State change start time (unix time): {{state_change_start_time_in_sec}}, Duration: {{state_change_duration_in_sec}} sec / Timeout: {{state_change_timeout_in_sec}} sec</div>
+      <div> State change start UNIX time: {{state_change_start_time_in_sec}}, Duration: {{state_change_duration_in_sec}} sec / Timeout: {{state_change_timeout_in_sec}} sec</div>
+      <div>&nbsp;</div>
+      <div>
+         <span class="text-l font-bold"> Auto run change</span> <span></span>
+         <span><input type="checkbox" v-model="auto_run_change_mode_enabled">: </span>
+         <span v-if="auto_run_change_mode_enabled == true">Enabled</span>
+         <span v-else> Disabled</span>
+      </div>
+      <div> Duration in sec (read): {{key_val_read['run_info:auto_run_change_dur']}} </div>
+      <div>
+         Duration in sec (set): <input size="5" class="inpt" type="text" v-model="key_val_set['run_info:auto_run_change_dur']"> <span></span>
+         <button  class="btn btn-gray" @click="key_set('run_info:auto_run_change_dur')"> Set </button> <span></span>
+      </div>
+      <div> Run start UNIX time {{run_start_unix_time}}, Elapsed time: {{run_elapsed_time}} sec</div>
       <div>&nbsp;</div>
       <div class="text-l font-bold"> Hook scripts</div>
       <table>
@@ -140,7 +157,7 @@
          <tr><td> &nbsp; </td><td> &nbsp; </td></tr>
          <tr><td> Pre-start script (set): </td>
             <td>
-               <input size="30" class="inpt" type="text" v-model="key_val_set['run_info:pre_start_script']"> <span></span>
+               <input size="50" class="inpt" type="text" v-model="key_val_set['run_info:pre_start_script']"> <span></span>
            </td><td>
                <button class="btn btn-gray" @click="key_set('run_info:pre_start_script')"> Set </button> <span></span>
                <button class="btn btn-gray" @click="key_clear('run_info:pre_start_script')"> Clear </button> <span></span>
@@ -148,7 +165,7 @@
          </tr>
          <tr><td> Post-start script (set):  </td>
             <td>
-               <input size="30" class="inpt" type="text" v-model="key_val_set['run_info:post_start_script']"> <span></span>
+               <input size="50" class="inpt" type="text" v-model="key_val_set['run_info:post_start_script']"> <span></span>
             </td><td>
                <button class="btn btn-gray" @click="key_set('run_info:post_start_script')"> Set </button> <span></span>
                <button class="btn btn-gray" @click="key_clear('run_info:post_start_script')"> Clear </button> <span></span>
@@ -156,7 +173,7 @@
          </tr>
          <tr><td> Pre-stop script (set): </td>
             <td>
-               <input size="30" class="inpt" type="text" v-model="key_val_set['run_info:pre_stop_script']"> <span></span>
+               <input size="50" class="inpt" type="text" v-model="key_val_set['run_info:pre_stop_script']"> <span></span>
             </td><td>
                <button class="btn btn-gray" @click="key_set('run_info:pre_stop_script')"> Set </button> <span></span>
                <button class="btn btn-gray" @click="key_clear('run_info:pre_stop_script')"> Clear </button> <span></span>
@@ -164,7 +181,7 @@
          </tr>
          <tr><td> Post-stop script (set): </td>
             <td>
-               <input size="30" class="inpt" type="text" v-model="key_val_set['run_info:post_stop_script']"> <span></span>
+               <input size="50" class="inpt" type="text" v-model="key_val_set['run_info:post_stop_script']"> <span></span>
             </td><td>
                <button class="btn btn-gray" @click="key_set('run_info:post_stop_script')"> Set </button> <span></span>
                <button class="btn btn-gray" @click="key_clear('run_info:post_stop_script')"> Clear </button> <span></span>
@@ -198,7 +215,7 @@
     @apply bg-gray-500 text-white opacity-50 cursor-not-allowed;
   }
   .inpt {
-    @apply bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-1.5 w-96 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500;
+    @apply bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-1.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500;
   }
 </style>
 
@@ -213,12 +230,14 @@ export default {
          state_change_duration_in_sec: 0,
          state_change_timeout_in_sec: 20,
          state_change_error: false,
-         wait_daqctl_state: "IDLE",
          daq_controllable: true,
          daq_state: "",
          daq_start_time: "",
          daq_stop_time: "",
-         exp_mode_enabled: false,
+         expert_mode_enabled: false,
+         auto_run_change_mode_enabled: false,
+         run_start_unix_time: 0,
+         run_elapsed_time: 0,
          daq_state_destination: {
             "CONNECT"      : "DEVICE READY",
             "INIT TASK"    : "READY",
@@ -228,32 +247,25 @@ export default {
             "RESET DEVICE" : "IDLE",
             "END"          : "NO PROCESS"
          },
-         key_list: [
-            "run_info:pre_start_script",
-            "run_info:post_start_script",
-            "run_info:pre_stop_script",
-            "run_info:post_stop_script" ,
-            "run_info:run_number",
-            "run_info:latest_run_number",
-            "run_info:run_comment"
-         ],
          key_val_read: {
-            "run_info:pre_start_script"  : "",
-            "run_info:post_start_script" : "",
-            "run_info:pre_stop_script"   : "",
-            "run_info:post_stop_script"  : "",
-            "run_info:run_number"        : "",
-            "run_info:latest_run_number" : "",
-            "run_info:run_comment"       : ""
+            "run_info:pre_start_script"    : "",
+            "run_info:post_start_script"   : "",
+            "run_info:pre_stop_script"     : "",
+            "run_info:post_stop_script"    : "",
+            "run_info:run_number"          : "",
+            "run_info:latest_run_number"   : "",
+            "run_info:run_comment"         : "",
+            "run_info:auto_run_change_dur" : ""
          },
          key_val_set: {
-            "run_info:pre_start_script"  : "",
-            "run_info:post_start_script" : "",
-            "run_info:pre_stop_script"   : "",
-            "run_info:post_stop_script"  : "",
-            "run_info:run_number"        : "",
-            "run_info:latest_run_number" : "",
-            "run_info:run_comment"       : ""
+            "run_info:pre_start_script"    : "",
+            "run_info:post_start_script"   : "",
+            "run_info:pre_stop_script"     : "",
+            "run_info:post_stop_script"    : "",
+            "run_info:run_number"          : "",
+            "run_info:latest_run_number"   : "",
+            "run_info:run_comment"         : "",
+            "run_info:auto_run_change_dur" : ""
          },
          hook_return: {
             "run_info:pre_start_script"  : "",
@@ -272,8 +284,9 @@ export default {
    methods: {
       update() {
          this.check_daq_state();
-         for (let key in this.key_list){
-            this.key_read(this.key_list[key]);
+         this.check_auto_run_change();
+         for (let key in this.key_val_read){
+            this.key_read(key);
          }
          setTimeout(() => { this.update(); }, 1000);
       },
@@ -297,6 +310,18 @@ export default {
               this.daq_state = "";
            }
         }).catch((error)=>{console.log(error.data);});
+      },
+      check_auto_run_change(){
+         if (this.run_start_unix_time > 0 && this.daq_state == "RUNNING") {
+            this.run_elapsed_time = parseInt(Date.now()/1000 - this.run_start_unix_time);
+            if ((this.run_elapsed_time >= this.key_val_read['run_info:auto_run_change_dur'])&&
+                (this.auto_run_change_mode_enabled == true)&&
+                (this.daq_controllable == true)) {
+               this.run_start_unix_time = 0;
+               this.state_change(["PRE STOP", "STOP","RESET TASK","RESET DEVICE", "POST STOP",
+               "PRE START","CONNECT","INIT TASK","RUN","POST START"]);
+            }
+         }
       },
       key_set(key){
          axios.get(this.fastapi_uri+'/set/'+key+'/'+this.key_val_set[key]+'/')
@@ -336,14 +361,14 @@ export default {
             }).catch((error)=>{console.log(error.data); reject();});
          })
       },
-      wait_for_state_change(){
+      wait_for_state_change(daq_state_dest, start_time_in_sec){
          return new Promise ((resolve, reject) => {
-            this.state_change_duration_in_sec = parseInt(Date.now() / 1000 - this.state_change_start_time_in_sec);
+            this.state_change_duration_in_sec = parseInt(Date.now() / 1000 - start_time_in_sec);
             if (this.state_change_duration_in_sec >= this.state_change_timeout_in_sec) {
                reject();
             }else{
-               if (this.daq_state != this.wait_daqctl_state) {
-                  setTimeout(()=>{ this.wait_for_state_change().then(()=>{resolve();}).catch(()=>{reject();}); }, 1000);
+               if (daq_state_dest != this.daq_state) {
+                  setTimeout(()=>{ this.wait_for_state_change(daq_state_dest, start_time_in_sec).then(()=>{resolve();}).catch(()=>{reject();}); }, 1000);
                }else{
                   resolve();
                }
@@ -364,6 +389,7 @@ export default {
          }
          if (cmd_arr[0] == "RUN") {
             this.daq_start_time = new Date();
+            this.run_start_unix_time = parseInt(Date.now()/1000);
             this.daq_stop_time = "";
             axios.get(this.fastapi_uri+'/get/run_info:run_number/')
             .then((response) => {
@@ -386,9 +412,9 @@ export default {
             let daqctl_msg = '{"command":"change_state","value":"'+cmd_arr[0]+'","services":["all"],"instances":["all"]}';
             axios.get(this.fastapi_uri+'/publish/daqctl/'+daqctl_msg)
             .then(()=>{
-               this.wait_daqctl_state = this.daq_state_destination[cmd_arr[0]];
                this.state_change_start_time_in_sec = parseInt(Date.now() / 1000);
-               this.wait_for_state_change().then(()=>{
+               this.wait_for_state_change(this.daq_state_destination[cmd_arr[0]], this.state_change_start_time_in_sec)
+               .then(()=>{
                   cmd_arr.shift();
                   this.state_change(cmd_arr);
                }).catch((error)=>{
@@ -404,9 +430,8 @@ export default {
    },
    mounted() {
       this.update();
-      for (let key in this.key_list){
-        console.log(key);
-        this.key_init(this.key_list[key]);
+      for (let key in this.key_val_read){
+        this.key_init(key);
       }
    }
 }
