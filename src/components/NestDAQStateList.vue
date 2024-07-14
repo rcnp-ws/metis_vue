@@ -63,15 +63,16 @@ export default {
                let device_name = ins_name.split('-')[0];	       
                if (this.nestdaq_device_list[device_name]) {
                   this.nestdaq_device_list[device_name] += 1;
-                  this.nestdaq_device_state_list[device_name][this.nestdaq_status_msg[ins_name]] += 1;
                }else{
                   this.nestdaq_device_list[device_name] = 1;
                   this.nestdaq_device_state_list[device_name] = {};
+               }
+               if (this.nestdaq_device_state_list[device_name][this.nestdaq_status_msg[ins_name]]) {
+                  this.nestdaq_device_state_list[device_name][this.nestdaq_status_msg[ins_name]] += 1;
+               }else{
                   this.nestdaq_device_state_list[device_name][this.nestdaq_status_msg[ins_name]] = 1;
                }
             }
-            console.log(this.nestdaq_device_list);
-            console.log(this.nestdaq_device_state_list);       
          }).catch((error)=>{console.log(error.data);});
       }
    },
