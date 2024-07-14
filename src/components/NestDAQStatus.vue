@@ -1,6 +1,5 @@
 <template>
    <div>
-      hoge aaaa
       <table>
          <tr>
            <th>device</th><th>status</th>
