@@ -329,20 +329,20 @@ export default {
                this.key_val_set[key] = this.key_val_set[key].substring(0, 255);
             }
          }
-         axios.get(this.fastapi_uri+'/set/'+key+'/'+this.key_val_set[key]+'/')
+         axios.get(this.fastapi_uri+'/nestdaq/set_path/'+key+'/'+this.key_val_set[key])
          .catch((error)=>{console.log(error.data);});
       },
       key_clear(key){
          this.key_val_set[key] = "";
       },
       key_read(key){
-         axios.get(this.fastapi_uri+'/get/'+key+'/')
+         axios.get(this.fastapi_uri+'/get/'+key)
          .then((response) => {
             this.key_val_read[key] = response.data["message"];
          }).catch((error)=>{console.log(error.data);});
       },
       key_init(key){
-         axios.get(this.fastapi_uri+'/get/'+key+'/')
+         axios.get(this.fastapi_uri+'/get/'+key)
          .then((response) => {
             this.key_val_set[key] = response.data["message"];
          }).catch((error)=>{console.log(error.data);});
@@ -355,10 +355,10 @@ export default {
       },
       exec_hook_script(key){
          return new Promise ((resolve, reject) => {
-            axios.get(this.fastapi_uri+'/get/'+key+'/')
+            axios.get(this.fastapi_uri+'/get/'+key)
             .then((response) => {
                let res = response.data["message"];
-               axios.get(this.fastapi_uri+'/syscmd/exec/'+res+'/')
+               axios.get(this.fastapi_uri+'/syscmd/exec/'+res)
                .then((response) => {
                   this.hook_return[key] = response.data["message"];
                   resolve();  
@@ -396,7 +396,7 @@ export default {
             this.daq_start_time = new Date();
             this.run_start_unix_time = parseInt(Date.now()/1000);
             this.daq_stop_time = "";
-            axios.get(this.fastapi_uri+'/get/run_info:run_number/')
+            axios.get(this.fastapi_uri+'/get/run_info:run_number')
             .then((response) => {
                let res_run_number = response.data["message"];
                axios.get(this.fastapi_uri+'/set/run_info:latest_run_number/'+res_run_number)
