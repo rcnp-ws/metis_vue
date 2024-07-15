@@ -1,5 +1,5 @@
 <template>
-   <div class="text-xl font-bold"> NestDAQ device status</div>
+   <div class="text-xl font-bold"> NestDAQ Device Status</div>
    <div>
       <table class="border-collapse border border-gray-500">
          <tr>
