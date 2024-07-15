@@ -3,6 +3,7 @@
    <div>
       <NestDAQController></NestDAQController>
       <NestDAQStateList></NestDAQStateList>
+      <NestDAQSoundAlert></NestDAQSoundAlert>
       <NestDAQStatus></NestDAQStatus>
    </div>
 </template>
@@ -10,6 +11,7 @@
 <script>
 import NestDAQController from './components/NestDAQController.vue'
 import NestDAQStateList  from './components/NestDAQStateList.vue'
+import NestDAQSoundAlert from './components/NestDAQSoundAlert.vue'
 import NestDAQStatus     from './components/NestDAQStatus.vue'
 
 export default {
@@ -20,6 +22,7 @@ export default {
    components: {
       NestDAQController,
       NestDAQStateList,
+      NestDAQSoundAlert,
       NestDAQStatus
    },
    methods: {
