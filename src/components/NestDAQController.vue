@@ -132,6 +132,17 @@
           ⊳ Exitting
       </div>
       <div> State change start UNIX time: {{state_change_start_time_in_sec}}, Elapsed time: {{state_change_elapsed_time_in_sec}} sec / Timeout: {{state_change_timeout_in_sec}} sec</div>
+      <div>
+         DAQ error status:
+         <span v-if="key_val_read['run_info:daq_error_status'] == ''"> None
+            <button class="btn btn-gray-disabled"> Reset Error Status </button>
+         </span>
+         <span v-else>
+            {{key_val_read['run_info:daq_error_status']}}
+            <button class="btn btn-gray" @click='reset_daq_error_status()'> Reset Error Status </button>
+         </span>
+      </div>
+      <div> DAQ controllable: {{daq_controllable}}</div>
       <div>&nbsp;</div>
       <div>
          <span class="text-l font-bold"> Auto run change:
@@ -139,7 +150,7 @@
          <span v-else> Disabled</span>
          </span>
       </div>
-      <div v-if="tabID == key_val_read['run_info:auto_run_change_ctl_holder']">
+      <div v-if="browser_tab_id == key_val_read['run_info:auto_run_change_ctl_holder']">
          <span v-if="key_val_read['run_info:auto_run_change_mode'] == 'enabled'">
             <button  class="btn btn-gray-disabled"> Enable </button> <span></span>
             <button  class="btn btn-gray" @click="auto_run_change_disable()"> Disable </button> <span></span>             
@@ -160,9 +171,9 @@
          Duration in sec (set): <input size="5" class="inpt" type="text" v-model="key_val_set['run_info:auto_run_change_dur']"> <span></span>
          <button  class="btn btn-gray" @click="key_set('run_info:auto_run_change_dur')"> Set </button> <span></span>
       </div>
-      <div v-if="tabID == key_val_read['run_info:auto_run_change_ctl_holder']"> Now you HAVE control! </div>
+      <div v-if="browser_tab_id == key_val_read['run_info:auto_run_change_ctl_holder']"> Now you HAVE control! </div>
       <div v-else> Now you do NOT have control...</div>
-      <div> Tab ID of this tab: {{tabID}} </div>
+      <div> Tab ID of this tab: {{browser_tab_id}} </div>
       <div> Tab ID of control holder: {{key_val_read['run_info:auto_run_change_ctl_holder']}} </div>
       <div> Run start UNIX time {{key_val_read['run_info:run_start_unix_time']}}, Elapsed time: {{run_elapsed_time}} sec / Duration : {{key_val_read['run_info:auto_run_change_dur']}} sec</div>
       <div>&nbsp;</div>
@@ -264,11 +275,10 @@ export default {
    data() {
       return {
          fastapi_uri: "http://ata03:8000",
-         tabID: 0,
+         browser_tab_id: 0,
          state_change_start_time_in_sec: 0,
          state_change_elapsed_time_in_sec: 0,
-         state_change_timeout_in_sec: 20,
-         state_change_error: false,
+         state_change_timeout_in_sec: 3,
          daq_controllable: true,
          daq_state: "",
          daq_start_time: "",
@@ -293,6 +303,7 @@ export default {
             "run_info:latest_run_number"          : "",
             "run_info:run_comment"                : "",
             "run_info:run_start_unix_time"        : "",
+            "run_info:daq_error_status"           : "",
             "run_info:auto_run_change_mode"       : "",
             "run_info:auto_run_change_dur"        : "",
             "run_info:auto_run_change_ctl_holder" : ""
@@ -306,6 +317,7 @@ export default {
             "run_info:latest_run_number"          : "",
             "run_info:run_comment"                : "",
             "run_info:run_start_unix_time"        : "",
+            "run_info:daq_error_status"           : "",
             "run_info:auto_run_change_mode"       : "",
             "run_info:auto_run_change_dur"        : "",
             "run_info:auto_run_change_ctl_holder" : ""
@@ -355,7 +367,7 @@ export default {
          }).catch((error)=>{console.log(error.data);});
       },
       check_auto_run_change(){
-         if (this.tabID == this.key_val_read['run_info:auto_run_change_ctl_holder']){
+         if (this.browser_tab_id == this.key_val_read['run_info:auto_run_change_ctl_holder']){
             this.key_expire('run_info:auto_run_change_mode',10);
             this.key_expire('run_info:auto_run_change_ctl_holder',10);
          }
@@ -363,7 +375,7 @@ export default {
             this.run_elapsed_time = parseInt(Date.now()/1000 - this.key_val_read['run_info:run_start_unix_time']);
             if ((this.run_elapsed_time >= this.key_val_read['run_info:auto_run_change_dur'])&&
                 (this.key_val_read['run_info:auto_run_change_mode'] == "enabled")&&
-                (this.tabID == this.key_val_read['run_info:auto_run_change_ctl_holder'])&&
+                (this.browser_tab_id == this.key_val_read['run_info:auto_run_change_ctl_holder'])&&
                 (this.daq_controllable == true)) {
                this.key_val_set['run_info:run_start_unix_time'] = 0;
                this.key_set('run_info:run_start_unix_time');
@@ -374,7 +386,7 @@ export default {
       },
       auto_run_change_enable(){
          if (this.key_val_read['run_info:auto_run_change_mode'] != "enabled"&&
-             (this.tabID == this.key_val_read['run_info:auto_run_change_ctl_holder'])) {
+             (this.browser_tab_id == this.key_val_read['run_info:auto_run_change_ctl_holder'])) {
              this.key_val_set['run_info:auto_run_change_mode'] = "enabled";
              this.key_set('run_info:auto_run_change_mode');
              this.auto_run_change_get_ctl();
@@ -382,14 +394,19 @@ export default {
       },
       auto_run_change_disable(){
          if ((this.key_val_read['run_info:auto_run_change_mode'] == "enabled")&&
-             (this.tabID == this.key_val_read['run_info:auto_run_change_ctl_holder'])) {
+             (this.browser_tab_id == this.key_val_read['run_info:auto_run_change_ctl_holder'])) {
              this.key_val_set['run_info:auto_run_change_mode'] = "";
              this.key_set('run_info:auto_run_change_mode');
          }
       },
       auto_run_change_get_ctl(){
-         this.key_val_set['run_info:auto_run_change_ctl_holder'] = this.tabID;
+         this.key_val_set['run_info:auto_run_change_ctl_holder'] = this.browser_tab_id;
          this.key_set('run_info:auto_run_change_ctl_holder');
+      },
+      reset_daq_error_status(){
+         this.key_val_set['run_info:daq_error_status'] = "";
+         this.key_set('run_info:daq_error_status');
+         this.daq_controllable = true;
       },
       key_set(key){
          if (key=="run_info:run_comment"){
@@ -437,7 +454,7 @@ export default {
          })
       },
       wait_for_state_change(daq_state_dest, start_time_in_sec){
-         return new Promise ((resolve, reject) => {
+         return new Promise ((resolve,reject) => {
             this.state_change_elapsed_time_in_sec = parseInt(Date.now() / 1000 - start_time_in_sec);
             if (this.state_change_elapsed_time_in_sec >= this.state_change_timeout_in_sec) {
                reject();
@@ -456,7 +473,8 @@ export default {
       },
       state_change(cmd_arr){
          this.daq_controllable = false;
-         this.state_change_error = false;
+         this.key_val_set['run_info:daq_error_status'] = "";
+         this.key_set('run_info:daq_error_status');
          if (cmd_arr.length == 0) {
             this.daq_controllable = true;
             return;
@@ -485,7 +503,8 @@ export default {
                cmd_arr.shift();
                this.state_change(cmd_arr);
             }).catch((error)=>{
-               this.state_change_error = true;
+               this.key_val_set['run_info:daq_error_status'] = "script_error";
+               this.key_set('run_info:daq_error_status');
                console.log(error.data);
             });
          }else{
@@ -497,12 +516,13 @@ export default {
                .then(()=>{
                   cmd_arr.shift();
                   this.state_change(cmd_arr);
-               }).catch((error)=>{
-                  this.state_change_error = true;
-                  console.log(error.data);
+               }).catch(()=>{
+                  this.key_val_set['run_info:daq_error_status'] = "wait_for_state_change";
+                  this.key_set('run_info:daq_error_status');
                });
             }).catch((error)=>{
-               this.state_change_error = true;
+               this.key_val_set['run_info:daq_error_status'] = "publish_error";
+               this.key_set('run_info:daq_error_status');
                console.log(error.data);
             });
          }
@@ -513,7 +533,7 @@ export default {
       for (let key in this.key_val_read){
          this.key_init(key);
       }
-      this.tabID = sessionStorage.tabID ? 
+      this.browser_tab_id = sessionStorage.tabID ? 
          sessionStorage.tabID : 
          sessionStorage.tabID = parseInt((Math.random())*1e10);
    }
