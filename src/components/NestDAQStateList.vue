@@ -18,6 +18,7 @@
          </tr>
       </table>
    </div>
+   <div>&nbsp;</div>
 </template>
 
 <script>
