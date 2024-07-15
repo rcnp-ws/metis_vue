@@ -19,7 +19,7 @@
             <input type="radio" value="" v-model="key_val_read['run_info:sound_file_option']"
                @click="set_sound_file_option('')" />
             Default </td><td></td>
-            <td> <button class="btn btn-gray" @click="play_sound('default')"> Play </button> <span></span> </td></tr>
+            <td> <button class="btn btn-gray" @click="play_sound('')"> Play </button> <span></span> </td></tr>
          <tr><td>
             <input type="radio" value="run_info:sound_file_uri_1" v-model="key_val_read['run_info:sound_file_option']"
                @click="set_sound_file_option('run_info:sound_file_uri_1')" />
@@ -105,7 +105,7 @@ export default {
       check_daq_error(){
          if ((this.sound_activated  == true) &&
              (this.key_val_read['run_info:daq_error_status'] != "")){
-            this.play_sound();
+            this.play_sound(this.key_val_read['run_info:sound_file_option']);
          }
       },
       set_sound_file_option(val){
@@ -137,12 +137,12 @@ export default {
             this.key_val_set[key] = response.data["message"];
          }).catch((error)=>{console.log(error.data);});
       },
-      play_sound(){
+      play_sound(key){
          let sound;
-         if (this.key_val_read['run_info:sound_file_option'] == "") {
+         if (key == "") {
              sound = new Audio("data:audio/wav;base64," + this.return_base64());
          }else{
-             sound = new Audio(this.key_val_read[this.key_val_read['run_info:sound_file_option']]);
+             sound = new Audio(this.key_val_read[key]);
          }
          sound.play();
       },
