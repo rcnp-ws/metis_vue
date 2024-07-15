@@ -278,7 +278,7 @@ export default {
          browser_tab_id: 0,
          state_change_start_time_in_sec: 0,
          state_change_elapsed_time_in_sec: 0,
-         state_change_timeout_in_sec: 3,
+         state_change_timeout_in_sec: 20,
          daq_controllable: true,
          daq_state: "",
          daq_start_time: "",
