@@ -1,38 +1,45 @@
 <template>
    <h2 class="text-xl font-bold"> NestDAQ Run Controller </h2>
-   <div> DAQ status: {{daq_state}} </div>
-   <div v-if="daq_state=='RUNNING'">
-      <div> Current run number (read): {{key_val_read['run_info:run_number']}} </div>
-   </div><div v-else>
-      <div> Next run number (read): {{key_val_read['run_info:run_number']}} </div>
-   </div>
-   <div> Latest run number (read): {{key_val_read['run_info:latest_run_number']}} </div>
-   <div>
-      Next run number (set): <input size="5" class="inpt" type="text" v-model="key_val_set['run_info:run_number']"> <span></span>
+   <table>
+   <tr><td> DAQ status: </td><td> {{daq_state}} </td></tr>
+   <tr v-if="daq_state=='RUNNING'">
+       <td> Current run number (read): </td><td>{{key_val_read['run_info:run_number']}}</td>
+   </tr><tr v-else>
+       <td> Next run number (read): </td><td> {{key_val_read['run_info:run_number']}}</td>
+   </tr>
+   <tr><td> Latest run number (read):</td><td> {{key_val_read['run_info:latest_run_number']}} </td></tr>
+   <tr><td>
+      Next run number (set):</td>
+      <td><input size="5" class="inpt" type="text" v-model="key_val_set['run_info:run_number']"> <span></span>
       <span v-if="(daq_state=='IDLE'||daq_state=='NO PROCESS')&&daq_controllable==true">
          <button  class="btn btn-blue" @click="key_set('run_info:run_number_set')"> Set </button> <span></span>
       </span><span v-else>
          <button  class="btn btn-blue-disabled"> Set </button> <span></span>
       </span>
       <button  class="btn btn-blue" @click="key_clear('run_info:run_number_set')"> Clear </button>
-   </div>
-   <div> Run comment (read): {{key_val_read['run_info:run_comment']}} </div>
-   <div>
-      Run comment (set): <input size="70" class="inpt" type="text" v-model="key_val_set['run_info:run_comment']"> <span></span>
+   </td>
+   </tr>
+   <tr><td> Run comment (read): </td><td>{{key_val_read['run_info:run_comment']}} </td></tr>
+   <tr><td>
+      Run comment (set): </td>
+      <td><input size="75" class="inpt" type="text" v-model="key_val_set['run_info:run_comment']"> <span></span>
       <span v-if="(daq_state=='IDLE'||daq_state=='NO PROCESS')&&daq_controllable==true">
          <button  class="btn btn-blue" @click="key_set('run_info:run_comment')"> Set </button> <span></span>
       </span><span v-else>
          <button  class="btn btn-blue-disabled"> Set </button> <span></span>
       </span>
       <button  class="btn btn-blue" @click="key_clear('run_info:run_comment')"> Clear </button>
-   </div>
-   <div> Start time: {{daq_start_time}} </div>
-   <div> Stop time: {{daq_stop_time}} </div>
-   <div>
-      <span>Auto run change: </span>
+   </td></tr>
+   <tr><td> Start time: </td><td> {{daq_start_time}} </td></tr>
+   <tr><td> Stop time:  </td><td> {{daq_stop_time}}  </td></tr>
+   <tr>
+      <td> Auto run change: </td>
+      <td>
       <span v-if="key_val_read['run_info:auto_run_change_mode'] == 'enabled'">Enabled, Elapsed time: {{run_elapsed_time}} sec / Duration: {{key_val_read['run_info:auto_run_change_dur']}} sec</span>
       <span v-else> Disabled</span>
-   </div>
+      </td>
+   </tr>
+   </table>
    <div>
       <span v-if="daq_state=='IDLE'&&daq_controllable==true">
          <button class="btn btn-blue" @click='state_change(["PRE START","CONNECT","INIT TASK","RUN","POST START"])'> Start </button> <span></span>
