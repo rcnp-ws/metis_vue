@@ -161,10 +161,18 @@
       <div>&nbsp;</div>
       <div class="text-l font-bold"> Hook scripts</div>
       <table>
-         <tr><td style="vertical-align: top"> Pre-start script return: </td><td> <pre>{{hook_return['run_info:pre_start_script']}}</pre>  </td><td></td></tr>
-         <tr><td style="vertical-align: top"> Post-start script return: </td><td> <pre>{{hook_return['run_info:post_start_script']}}</pre> </td><td></td></tr>
-         <tr><td style="vertical-align: top"> Pre-stop script return:  </td><td> <pre>{{hook_return['run_info:pre_stop_script']}}</pre>   </td><td></td></tr>
-         <tr><td style="vertical-align: top"> Post-stop script return: </td><td> <pre>{{hook_return['run_info:post_stop_script']}}</pre>  </td><td></td></tr>
+         <tr><td style="vertical-align: top"> Pre-start script return: </td><td>
+            <pre class="text-xs">{{hook_return['run_info:pre_start_script']}}</pre>
+         </td><td></td></tr>
+         <tr><td style="vertical-align: top"> Post-start script return: </td><td>
+            <pre class="text-xs">{{hook_return['run_info:post_start_script']}}</pre>
+         </td><td></td></tr>
+         <tr><td style="vertical-align: top"> Pre-stop script return:  </td><td>
+            <pre class="text-xs">{{hook_return['run_info:pre_stop_script']}}</pre>
+         </td><td></td></tr>
+         <tr><td style="vertical-align: top"> Post-stop script return: </td><td>
+            <pre class="text-xs">{{hook_return['run_info:post_stop_script']}}</pre>
+         </td><td></td></tr>
          <tr><td> &nbsp; </td><td>&nbsp; </td></tr>
          <tr><td> Pre-start scirpt (read): </td><td> {{key_val_read['run_info:pre_start_script']}}  </td>
             <td> <button class="btn btn-gray" @click="exec_hook_script('run_info:pre_start_script')"> Run </button> <span></span> </td></tr>
