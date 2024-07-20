@@ -4,7 +4,7 @@
       <NestDAQController></NestDAQController>
       <NestDAQStateList></NestDAQStateList>
       <NestDAQSoundAlert></NestDAQSoundAlert>
-      <NestDAQStatus></NestDAQStatus>
+      <!-- ><NestDAQStatus></NestDAQStatus> -->
    </div>
 </template>
 
