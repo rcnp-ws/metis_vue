@@ -12,7 +12,7 @@
       Next run number (set):</td>
       <td><input size="5" class="inpt" type="text" v-model="key_val_set['run_info:run_number']"> <span></span>
       <span v-if="(daq_state=='IDLE'||daq_state=='NO PROCESS')&&daq_controllable==true">
-         <button  class="btn btn-blue" @click="key_set('run_info:run_number_set')"> Set </button> <span></span>
+         <button  class="btn btn-blue" @click="key_set('run_info:run_number')"> Set </button> <span></span>
       </span><span v-else>
          <button  class="btn btn-blue-disabled"> Set </button> <span></span>
       </span>
