@@ -12,7 +12,7 @@
 import NestDAQController from './components/NestDAQController.vue'
 import NestDAQStateList  from './components/NestDAQStateList.vue'
 import NestDAQSoundAlert from './components/NestDAQSoundAlert.vue'
-import NestDAQStatus     from './components/NestDAQStatus.vue'
+//import NestDAQStatus     from './components/NestDAQStatus.vue'
 
 export default {
    data () {
@@ -23,7 +23,7 @@ export default {
       NestDAQController,
       NestDAQStateList,
       NestDAQSoundAlert,
-      NestDAQStatus
+      //NestDAQStatus
    },
    methods: {
    },
