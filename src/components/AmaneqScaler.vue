@@ -24,14 +24,14 @@
                <tr>
                   <th>Ch</th>
                   <th>Scaler</th>
-                  <th>Rate</th>
+                  <th>Rate (kHz)</th>
                </tr>
-               <tr v-for="idx in nRows" :key="idx">
+                  <tr v-for="idx in nRows" :key="idx">
                   <td class="ch" v-if="(icol-1)*nRows+(idx-1) < scaler.data.length">{{ (idx-1) + (icol-1)*nRows  }}</td>
                   <td class="val" v-if="(icol-1)*nRows+(idx-1) < scaler.data.length">{{ scaler.data[(idx-1)+(icol-1)*nRows] }}</td>
                   <td class="val" v-if="(icol-1)*nRows+(idx-1) < scaler.data.length">{{ scaler.rate[(idx-1)+(icol-1)*nRows]}}</td>
-               </tr>
-            </table>
+                  </tr>
+         </table>
 
          </div>
 
@@ -77,9 +77,10 @@ export default {
          nTot: 32,
          nCols: 1,
          nRows: 32,
+         active: false,
          scrs: [],
-         addUri: 'http://localhost:8000/scaler/add/hul/' + this.ip,
-         readDataUri: 'http://localhost:8000/scaler/read/data/' + this.ip
+         addUri: 'http://172.16.204.118:8000/scaler/add/hul/' + this.ip,
+         readDataUri: 'http://172.16.204.118:8000/scaler/read/data/' + this.ip
          // 表を整形する
       }
    },
@@ -98,8 +99,8 @@ export default {
                      this.scalers[key]['nCols'] = Math.ceil(this.scalers[key].data.length / this.nRows);
                      this.scalers[key]['rate'] = [];
                      for (let i = 0; i < this.scalers[key].data.length; i++) {
-                        var val = (this.scalers[key].diff[i]/this.scalers[key].diffTs);
-                        console.log(val);
+                        var val = (this.scalers[key].diff[i]/(this.scalers[key].diffHbfn * 2**19 * 1e-9)/1000.);
+                        //console.log(val);
                         this.scalers[key]['rate'][i] = val.toFixed(3);
                      }
                   }
@@ -186,8 +187,9 @@ td.val {
    width: 8rem;
 }
 
+
 th,
-td {
+td.ch, td.val {
    padding: 0rem 1rem 0rem 0rem;
    font-size: .8rem;
    text-align: right;
@@ -196,10 +198,11 @@ td {
 }
 
 th {
-   font-weight: normal;
-   font-size: .5rem;
-   color: #666;
+   font-weight: bold;
+   font-size: 0.8rem;
+   color: #000;
    background: #eee;
+   text-align: center;
 }
 
 img {
