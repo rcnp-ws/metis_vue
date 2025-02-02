@@ -79,14 +79,15 @@ export default {
          nRows: 32,
          active: false,
          scrs: [],
-         addUri: 'http://172.16.204.118:8000/scaler/add/hul/' + this.ip,
-         readDataUri: 'http://172.16.204.118:8000/scaler/read/data/' + this.ip
+         baseUri: 'http://172.16.210.154:8000',
+         addUri: '/scaler/add/hul/' + this.ip,
+         readDataUri: '/scaler/read/data/' + this.ip
          // 表を整形する
       }
    },
    methods: {
       update() {
-         axios.get(this.readDataUri)
+         axios.get(this.baseUri+this.readDataUri)
             .then((response) => {
                this.status = response.data.header.status;
                this.message = response.data.header.message;
@@ -141,7 +142,7 @@ export default {
    mounted() {
       //console.log(this.ip);
 
-      axios.get(this.addUri)
+      axios.get(this.baseUri+this.addUri)
          .then((response) => {
             this.status = response.data.header.status;
             this.message = response.data.header.message;
