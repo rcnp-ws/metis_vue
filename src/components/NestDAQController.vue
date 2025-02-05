@@ -1,11 +1,11 @@
 <template>
    <h2 class="text-xl font-bold"> NestDAQ Run Controller </h2>
    <table>
-   <tr><td> DAQ status: </td><td> {{daq_state}} </td></tr>
+   <tr><td> DAQ status: </td><td> <span class="text-4xl"> {{daq_state}} </span></td></tr>
    <tr v-if="daq_state=='RUNNING'">
-       <td> Current run number (read): </td><td>{{key_val_read['run_info:run_number']}}</td>
+       <td> Current run number (read): </td><td><span class="text-4xl">{{key_val_read['run_info:run_number']}}</span></td>
    </tr><tr v-else>
-       <td> Next run number (read): </td><td> {{key_val_read['run_info:run_number']}}</td>
+       <td> Next run number (read): </td><td><span class="text-4xl"> {{key_val_read['run_info:run_number']}}</span></td>
    </tr>
    <tr><td> Latest run number (read):</td><td> {{key_val_read['run_info:latest_run_number']}} </td></tr>
    <tr><td>
@@ -30,8 +30,9 @@
       </span>
       <button  class="btn btn-blue" @click="key_clear('run_info:run_comment')"> Clear </button>
    </td></tr>
-   <tr><td> Start time: </td><td> {{daq_start_time}} </td></tr>
-   <tr><td> Stop time:  </td><td> {{daq_stop_time}}  </td></tr>
+   <tr><td> Current time: </td><td> <span class="text-3xl"> {{daq_current_time}} </span></td></tr>
+   <tr><td> Start time: </td><td> <span class="text-3xl"> {{daq_start_time}}  </span></td></tr>
+   <tr><td> Stop time:  </td><td> <span class="text-3xl"> {{daq_stop_time}}   </span></td></tr>
    <tr>
       <td> Auto run change: </td>
       <td>
@@ -292,6 +293,7 @@ export default {
          state_change_timeout_in_sec: 20,
          daq_controllable: true,
          daq_state: "",
+         daq_current_time: "",
          daq_start_time: "",
          daq_stop_time: "",
          expert_mode_enabled: false,
@@ -351,6 +353,7 @@ export default {
       update() {
          this.check_daq_state();
          this.check_auto_run_change();
+         this.daq_current_time = new Date();
          for (let key in this.key_val_read){
             this.key_read(key);
          }
