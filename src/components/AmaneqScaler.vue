@@ -59,6 +59,8 @@
 import axios from 'axios'
 import LocalTimestamp from './LocalTimestamp.vue';
 import TS from '../utilities/Timestamp'
+import { useGlobalStore } from '@/stores/global';
+import { ref } from 'vue';
 
 export default {
    components: { LocalTimestamp },
@@ -67,6 +69,7 @@ export default {
    },
    data() {
       return {
+         objectPool: ref(useGlobalStore().objectPool),
          isValid: false,
          status: 0,
          message: "",
@@ -92,6 +95,7 @@ export default {
                this.status = response.data.header.status;
                this.message = response.data.header.message;
                this.scalers = response.data.payload;
+               //console.log(this.scalers);
                if (this.status == 0) {
                   this.isValid = true;
                   for (let key in this.scalers) {
@@ -104,6 +108,7 @@ export default {
                         //console.log(val);
                         this.scalers[key]['rate'][i] = val.toFixed(3);
                      }
+                     this.objectPool["scalers"][key] = this.scalers[key];
                   }
                }
                
@@ -141,7 +146,9 @@ export default {
    },
    mounted() {
       //console.log(this.ip);
-
+      if (this.objectPool["scalers"] == undefined) {
+         this.objectPool["scalers"] = {};
+      }
       axios.get(this.baseUri+this.addUri)
          .then((response) => {
             this.status = response.data.header.status;
@@ -158,7 +165,9 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
+
+
 div.state {
    border: 1px solid blue;
 }
@@ -196,6 +205,7 @@ td.ch, td.val {
    text-align: right;
    border-bottom: 1px solid #ddd;
    border-top: 1px solid #ddd;
+   font-family: /* 英字用のフォントを指定 */ 'Raleway', /* 日本語用のフォントを指定 */ 'Hiragino Kaku Gothic ProN', 'ヒラギノ角ゴ ProN W3', 'メイリオ', Meiryo, sans-serif;
 }
 
 th {

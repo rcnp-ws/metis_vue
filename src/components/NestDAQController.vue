@@ -236,6 +236,10 @@
       </table>
    </div>
    <div>&nbsp;</div>
+   <div>
+      <NestDAQStateList></NestDAQStateList>
+      <NestDAQSoundAlert></NestDAQSoundAlert>
+   </div>
 </template>
 
 <style>
@@ -270,10 +274,17 @@
 
 <script>
 import axios from 'axios'
-
+import NestDAQStateList  from './NestDAQStateList.vue'
+import NestDAQSoundAlert from './NestDAQSoundAlert.vue'
+import { useGlobalStore } from '@/stores/global';
 export default {
+   components: {
+      NestDAQStateList,
+      NestDAQSoundAlert,
+   },
    data() {
       return {
+         objectPool: useGlobalStore().objectPool,
          fastapi_uri: "http://ata03:8000",
          browser_tab_id: 0,
          state_change_start_time_in_sec: 0,
@@ -343,6 +354,14 @@ export default {
          for (let key in this.key_val_read){
             this.key_read(key);
          }
+         this.objectPool["daq"]["state"] = this.daq_state;
+         this.objectPool["daq"]["controllable"] = this.daq_controllable;
+         this.objectPool["daq"]["start_time"] = this.daq_start_time; 
+         this.objectPool["daq"]["stop_time"] = this.daq_stop_time;
+         this.objectPool["daq"]["run_number"] = this.key_val_read['run_info:run_number'];
+         this.objectPool["daq"]["latest_run_number"] = this.key_val_read['run_info:latest_run_number'];
+         this.objectPool["daq"]["run_comment"] = this.key_val_read['run_info:run_comment'];
+         this.objectPool["daq"]["elapsed_time"] = this.run_elapsed_time;
          setTimeout(() => { this.update(); }, 1000);
       },
       check_daq_state(){
@@ -529,6 +548,7 @@ export default {
       }
    },
    mounted() {
+      this.objectPool["daq"] = {};
       this.update();
       for (let key in this.key_val_read){
          this.key_init(key);
