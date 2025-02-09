@@ -19,16 +19,6 @@
          </keep-alive>
       </div>      
    </div>
-   
-
-   <div>
-      <NestDAQController></NestDAQController>
-      <NestDAQStateList></NestDAQStateList>
-      <NestDAQSoundAlert></NestDAQSoundAlert>
-      <!-- ><NestDAQStatus></NestDAQStatus> -->
-   </div>
-     <tab-example></tab-example>
-     <test-component></test-component>
 </template>
 <script>
 import NestDAQController from './components/NestDAQController.vue'
@@ -39,21 +29,25 @@ import RunStatusSummary from './components/RunStatusSummary.vue'
 import testComponent from './components/test.vue'
 import LocalTimestamp from './components/LocalTimestamp.vue'
 import ConfigPanel from './components/ConfigPanel.vue'
-//import NestDAQStatus     from './components/NestDAQStatus.vue'
+import BabirlDAQController from './components/BabirlDAQController.vue'
 
 export default {
    data () {
       return {
          tablist: {
             RunStatusSummary: 'Status',
-            NestDAQController: 'Control',
+            NestDAQController: 'NestDAQ',
+            BabirlDAQController: 'Babirl',
             TabExample: 'Scaler',
             ConfigPanel: 'Config'
          },
          currentTab: 'RunStatusSummary',
          propsForRunStatusSummary : {},
          propsForNestDAQController: { },
-         propsForTabExample: { }
+         propsForTabExample: { },
+         propsForBabirlDAQController: { 
+            apiurl : 'http://172.16.210.154:8001/babirl',
+            hostname : 'nhdaq300' }
       }
    },
    computed: {
@@ -65,6 +59,8 @@ export default {
                return this.propsForNestDAQController;
             case 'TabExample':
                return this.propsForTabExample;
+            case 'BabirlDAQController':
+               return this.propsForBabirlDAQController;
             default:
                return {};
          }
@@ -79,7 +75,7 @@ export default {
       testComponent,
       LocalTimestamp,
       ConfigPanel,
-      //NestDAQStatus
+      BabirlDAQController,
    },
    methods: {
    },
@@ -88,15 +84,8 @@ export default {
 }
 </script>
 
-<style>
-html {
-   font-family: /* 英字用のフォントを指定 */ 'Raleway', /* 日本語用のフォントを指定 */ 'Hiragino Kaku Gothic ProN', 'ヒラギノ角ゴ ProN W3', 'メイリオ', Meiryo, sans-serif;
-}
-</style>
 <style scoped>
-body {
-  color: #3f4548;
-}
+
 
 /* ulのデフォルトスタイルを消去 */
 .tabs-menu {
@@ -116,7 +105,7 @@ body {
   border-width: 1px;
   border-color: transparent;
   border-radius: 4px 4px 0 0;
-  color: #557f95;
+  @apply text-teal-600;
   text-decoration: none;
 }
 
@@ -133,8 +122,8 @@ body {
 
 /* 選択中のタブ */
 .tabs-menu .active {
-  border-color: #999 #999 transparent #999;
-  background-color: #f0fbff;
+  border-color: #999 #999 transparent #841a1a;
+  @apply bg-teal-50;
   color: black;
 }
 
@@ -142,6 +131,7 @@ body {
 .tabs-content {
   clear: both;
   background-color: #f0fbff;
+  @apply bg-teal-50;
   border: 1px solid #999;
   border-radius: 0 4px 4px 4px;
   padding: 10px 10px 30px 10px;

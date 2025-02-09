@@ -35,6 +35,7 @@ import { useGlobalStore } from '@/stores/global';
 import { defineComponent } from 'vue';
 import { ref } from 'vue';
 import ModalBase from './ModalBase.vue';
+import objectPool from '@/stores/objectPool';
 
 export default defineComponent ({
    components: { ModalBase },
@@ -64,10 +65,11 @@ export default defineComponent ({
             bit = 15 - bit;
          this.unit = this.unitOptions[bit];  
          let bi = objectPool.scalers?.[this.ids[4]]?.rate[this.chs[4]] 
-         * this.fsrOptions[bit];
-         this.value = bi.toPrecision(4-String(this.fsrOptions[bit]).length);
+         * this.fsrOptions[bit]/2.;
+         this.value = bi.toFixed(2);
          //this.value = 15 - bit;
          this.range = this.fsrOptions[bit] + this.unitOptions[bit];
+         objectPool['bi'] = { 'value' : this.value};
          setTimeout(() => { this.update(); }, 300);
       }
 
@@ -90,6 +92,7 @@ export default defineComponent ({
       }  
    },
    mounted() {
+      objectPool['bi'] = { 'value' : 0};
       this.update();
    }
 })
@@ -98,10 +101,9 @@ export default defineComponent ({
 <style scoped>
 
 div.frame {
-   width : 100px;
+   width : 150px;
    display: inline-block;
    padding: 0rem 1rem 0rem 0rem;
-   font-size: .8rem;
    text-align: right;
    font-family: /* 英字用のフォントを指定 */ 'Raleway', /* 日本語用のフォントを指定 */ 'Hiragino Kaku Gothic ProN', 'ヒラギノ角ゴ ProN W3', 'メイリオ', Meiryo, sans-serif;
 }

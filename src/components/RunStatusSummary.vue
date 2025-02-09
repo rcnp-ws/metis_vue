@@ -8,40 +8,58 @@
  @created 2025-02-02 09:55
 -->
 <template>
-   <div>
-      <table>
+   <div class="top-frame">
+      <h1>Summary </h1>
+      <span class="headding-view">BI</span><span style="display: inline-block; width: 20em;" class="content-view"><ShowBeamIntensity/></span><span></span>
+      <span class="headding-view">Elapsed </span> <span class="digit">{{ objectPool.daq?.elapsed_time }}</span>
+      <br/>
+      <h1>Nest DAQ Status Summary</h1>
+      <table width="100%">
          <tr>
             <td  class="headding-view">Latest Run</td>
-            <td>{{ objectPool.daq?.latest_run_number }}</td>
-         </tr>
-         <tr>
+            <td class="content-view">{{ objectPool.daq?.latest_run_number }}</td>
             <td  class="headding-view">Run Status</td>
-            <td>{{ objectPool.daq?.state }}</td>
+            <td class="content-view">{{ objectPool.daq?.state }}</td>
          </tr>
          <tr>
             <td class="headding-view">Start Time</td>
-            <td>{{ objectPool.daq?.start_time }}</td>
-         </tr>
-         <tr>
+            <td class="content-view">{{ objectPool.daq?.start_time }}</td>
             <td class="headding-view">End Time</td>
-            <td >{{ objectPool.daq?.end_time }}</td>
-         </tr>
-         <tr>
-            <td class="headding-view">Elapsed Time</td>
-            <td >{{ objectPool.daq?.elapsed_time }}</td>
+            <td class="content-view">{{ objectPool.daq?.end_time }}</td>
          </tr>
          <tr>
             <td class="headding-view">Comment</td>
-            <td>{{ objectPool.daq?.run_comment }}</td>
+            <td colspan="3">{{ objectPool.daq?.run_comment }}</td>
+         </tr>
+      </table>
+      <br/>
+      <h1>Babirl DAQ Status Summary</h1>
+      <table width="100%">
+         <tr>
+            <td class="headding-view">Latest Run</td>
+            <td class="content-view">{{ objectPool.babirl?.runinfo.runnumber }}</td>
+            <td class="headding-view">Run Status</td>
+            <td class="content-view">{{ objectPool.babirl?.runinfo.runstatus }}</td>
          </tr>
          <tr>
-            <td class="headding-view">Beam Intensity</td>
-            <td><ShowBeamIntensity/></td>
-            </tr> 
+            <td class="headding-view">Start Time</td>
+            <td class="content-view">{{ objectPool.babirl?.runinfo.startdate }}</td>
+            <td class="headding-view">End Time</td>
+            <td class="content-view">{{ objectPool.babirl?.runinfo.stopdate }}</td>
+         </tr>
+         <tr>
+            <td class="headding-view">Header</td>
+            <td colspan="3">{{ objectPool.babirl?.runinfo.header }}</td>
+         </tr>
+         <tr>
+            <td class="headding-view">Ender</td>
+            <td colspan="3">{{ objectPool.babirl?.runinfo.ender }}</td>
+         </tr>
       </table>
+      <br/>
+      <ShowScaler></ShowScaler>
    </div>
 
-<ShowScaler></ShowScaler>
 </template>
 
 <script>
@@ -67,6 +85,12 @@ export default defineComponent ({
 </script>
 
 <style scoped>
+.top-frame {
+   width: 95%;
+   padding: 10px;
+   margin: 10px;
+   border-radius: 5px;
+}
 td {
    padding: 2px;
    margin: 0px;
@@ -100,7 +124,6 @@ td {
            width: 100px;
            text-align: right;
            padding: 5px;
-           font-size: 11pt;
         }
    
         .digit-input {
@@ -120,9 +143,17 @@ td {
         }
    
         .headding-view {
-           font-size: 85%;
            text-align: center;
            font-weight: 900;
-
+         width:15%;
+      }
+      .content-view {
+         text-align: left;
+         width: 35%;
+      }
+      .digit {
+         display: inline-block;
+         width: 5em;
+         text-align: right;
       }
 </style>

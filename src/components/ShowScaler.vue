@@ -4,10 +4,12 @@
    <div v-if="'scalers' in config">
       <table>
          <tr>
+            <th>>name</th>
             <th>id</th>
             <th>ch</th>
          </tr> 
          <tr v-for="scr in config.scalers" :key="scr">
+            <td><input type="text" v-model="scr.name"/></td>
             <td><select v-model="scr.id">
                   <option v-for="id in getIdOptions()" :key="id" :value="id">{{ id }}</option>
                </select>
@@ -31,21 +33,23 @@
  <div v-if="'scalers' in config">
    <table>
       <tr>
+         <th>name</th>
          <th>id</th>
          <th>ch</th>
-         <th>rate</th>
+         <th>rate (kHz)</th>
+         <th>rate (kHz / nA)</th>
          <th>scaler</th>
       </tr>
       <tr v-for="scr in config.scalers" :key="scr">
+         <td class="name">{{ scr.name }}</td>
          <td class="id">{{ scr.id }}</td>
          <td class="ch">{{ scr.ch }}</td>
          <td class="val">{{ get(scr.id,scr.ch,"rate") }}</td>
+         <td class="val">{{ ratePerBeam(scr.id,scr.ch) }}</td>
          <td class="val">{{ get(scr.id,scr.ch,"data") }}</td>
       </tr>
    </table>
 </div>
-{{ config.doReload }}
-
 </template>
 
 <script>
@@ -72,6 +76,17 @@ export default defineComponent ({
          return (id, ch, type) => {
          return objectPool["scalers"]?.[id]?.[type]?.[ch] || "not available";
       }}  );
+      const ratePerBeam = computed(() => {
+         return (id, ch) => {
+            console.log(objectPool);
+            if ('bi' in objectPool) {
+               return (objectPool["scalers"]?.[id]?.rate[ch]/objectPool.bi.value).toPrecision(4) || "N/A";
+            } else {
+               return "N/A";
+            }
+         }
+      });
+
 
       const getIdOptions = computed(() => {
          return () => {
@@ -90,6 +105,7 @@ export default defineComponent ({
       return {
          add,
          get,
+         ratePerBeam,
          getIdOptions,
          objectPool,
          configPool,
@@ -110,9 +126,15 @@ export default defineComponent ({
    },
    mounted() {
       this.config["scalers"] = [
-         { id: "192.168.2.169-0", ch : 5 },
-         { id: "192.168.2.169-0", ch : 5 },
-         { id: "192.168.2.169-0", ch : 5 },
+      { name: "GR", id: "192.168.2.169-1", ch : 6 },
+      { name: "Recoil", id: "192.168.2.169-1", ch : 1},
+      { name: "GR PS2", id: "192.168.2.169-1", ch : 2 },
+      { name: "GR PS3", id: "192.168.2.169-1", ch : 0},
+         { name: "AKIMUNE U", id: "192.168.2.169-0", ch : 0 },
+         { name: "AKIMUNE D", id: "192.168.2.169-0", ch : 1 },
+         { name: "AKIMUNE L", id: "192.168.2.169-0", ch : 2 },
+         { name: "AKIMUNE R", id: "192.168.2.169-0", ch : 3 },
+         { name: "RF", id: "192.168.2.169-0", ch : 5 },
    ];
       console.log("mounted show scaler");
       // this.update();
@@ -143,12 +165,19 @@ div.state {
 
 table {
    border-collapse: collapse;
-   //width: 100%;
+   width: 70%;
 }
+
+td.name {
+   padding: 0.1rem;
+   text-align: center;
+   width: 10rem;
+}
+
 
 td.id {
    padding: 0.1rem;
-   width: 8rem;
+   width: 10rem;
 }
 
 td.ch {
@@ -163,20 +192,12 @@ td.val {
 
 td.id, td.ch, td.val {
    padding: 0rem 1rem 0rem 0rem;
-   font-size: .8rem;
    text-align: right;
    border-bottom: 1px solid #ddd;
    border-top: 1px solid #ddd;
    font-family: /* 英字用のフォントを指定 */ 'Raleway', /* 日本語用のフォントを指定 */ 'Hiragino Kaku Gothic ProN', 'ヒラギノ角ゴ ProN W3', 'メイリオ', Meiryo, sans-serif;
 }
 
-th {
-   font-weight: bold;
-   font-size: 0.8rem;
-   color: #000;
-   background: #eee;
-   text-align: center;
-}
 
 img {
    width: 80px;
