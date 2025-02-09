@@ -91,7 +91,7 @@ export default defineComponent({
       this.isRunning = (objectPool['babirl']?.runinfo?.runstatus === 'START' || objectPool['babirl']?.runinfo?.runstatus === 'NSSTA');
       this.isSaved = objectPool['babirl']?.runinfo?.runstatus === 'START';
       this.isStateOK = true;
-      setTimeout((() => { this.updateConfig(); }), 100);
+      setTimeout((() => { this.updateConfig(); }), 1000);
       }
     function daqnssta() {
      axios.get(props.apiurl + "/" + props.hostname + "/control/nssta");

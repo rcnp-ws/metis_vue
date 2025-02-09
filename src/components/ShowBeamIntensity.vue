@@ -70,7 +70,7 @@ export default defineComponent ({
          //this.value = 15 - bit;
          this.range = this.fsrOptions[bit] + this.unitOptions[bit];
          objectPool['bi'] = { 'value' : this.value};
-         setTimeout(() => { this.update(); }, 300);
+         setTimeout(() => { this.update(); }, 900);
       }
 
       return {

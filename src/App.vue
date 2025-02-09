@@ -17,7 +17,12 @@
           <keep-alive> 
             <component :is="currentTab" v-bind="getPropsForCurrentTab"></component>
          </keep-alive>
-      </div>      
+      </div>
+      <div v-show="false">
+      <div v-for="(tab, name) in tablist" :key="name">
+         <component :is="name" v-bind="getProps(name)"></component>
+      </div>
+      </div>
    </div>
 </template>
 <script>
@@ -26,7 +31,6 @@ import NestDAQStateList  from './components/NestDAQStateList.vue'
 import NestDAQSoundAlert from './components/NestDAQSoundAlert.vue'
 import TabExample from './examples/TabExample.vue'
 import RunStatusSummary from './components/RunStatusSummary.vue'
-import testComponent from './components/test.vue'
 import LocalTimestamp from './components/LocalTimestamp.vue'
 import ConfigPanel from './components/ConfigPanel.vue'
 import BabirlDAQController from './components/BabirlDAQController.vue'
@@ -72,14 +76,29 @@ export default {
       NestDAQSoundAlert,
       TabExample,
       RunStatusSummary,
-      testComponent,
       LocalTimestamp,
       ConfigPanel,
       BabirlDAQController,
    },
    methods: {
+      getProps: function (name) {
+         switch (name) {
+            case 'RunStatusSummary':
+               return this.propsForRunStatusSummary;
+            case 'NestDAQController':
+               return this.propsForNestDAQController;
+            case 'TabExample':
+               return this.propsForTabExample;
+            case 'BabirlDAQController':
+               return this.propsForBabirlDAQController;
+            default:
+               return {};
+         }
+      },
    },
    mounted () {
+      console.log(this.getProps('RunStatusSummary'));
+      console.log(this.getPropsForCurrentTab);
    }  
 }
 </script>

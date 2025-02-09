@@ -559,6 +559,8 @@ export default {
       this.browser_tab_id = sessionStorage.tabID ? 
          sessionStorage.tabID : 
          sessionStorage.tabID = parseInt((Math.random())*1e10);
+         console.log('NestDAQController mounted');
+      console.log('Tab ID: '+sessionStorage.tabID);
    }
 }
 </script>
