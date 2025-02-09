@@ -18,9 +18,11 @@
             <component :is="currentTab" v-bind="getPropsForCurrentTab"></component>
          </keep-alive>
       </div>
+      <div v-if="initialized">
       <div v-show="false">
       <div v-for="(tab, name) in tablist" :key="name">
          <component :is="name" v-bind="getProps(name)"></component>
+      </div>
       </div>
       </div>
    </div>
@@ -38,6 +40,7 @@ import BabirlDAQController from './components/BabirlDAQController.vue'
 export default {
    data () {
       return {
+         initialized: false,
          tablist: {
             RunStatusSummary: 'Status',
             NestDAQController: 'NestDAQ',
@@ -97,8 +100,7 @@ export default {
       },
    },
    mounted () {
-      console.log(this.getProps('RunStatusSummary'));
-      console.log(this.getPropsForCurrentTab);
+      this.initialized = true;
    }  
 }
 </script>

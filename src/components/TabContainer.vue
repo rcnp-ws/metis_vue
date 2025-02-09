@@ -70,7 +70,6 @@ export default {
   mounted() {
    tab_container_uid++;
    this.id = tab_container_uid;
-   console.log("id = ", tab_container_uid);
   }
 };
 </script>

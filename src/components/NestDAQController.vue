@@ -518,6 +518,21 @@ export default {
                .catch((error)=>{console.log(error.data);});
             }).catch((error)=>{console.log(error.data);});
          }
+         switch(cmd_arr[0]) {
+            case "PRE START":
+            case "PRE STOP":  
+               //console.log("PRE START/STOP");
+               axios.get(this.fastapi_uri+'/scaler/suspend');
+               break;
+            case "POST START":
+            case "POST STOP":
+               //console.log("POST START/STOP");
+               axios.get(this.fastapi_uri+'/scaler/resume');
+               break;
+            default:
+               //console.log("default");
+               break;
+         }
          if ((cmd_arr[0] == "PRE START") || (cmd_arr[0] == "POST START") ||
              (cmd_arr[0] == "PRE STOP")  || (cmd_arr[0] == "POST STOP")  ) {
             this.exec_hook_script(this.hook_cmd_key[cmd_arr[0]])
@@ -559,8 +574,6 @@ export default {
       this.browser_tab_id = sessionStorage.tabID ? 
          sessionStorage.tabID : 
          sessionStorage.tabID = parseInt((Math.random())*1e10);
-         console.log('NestDAQController mounted');
-      console.log('Tab ID: '+sessionStorage.tabID);
    }
 }
 </script>

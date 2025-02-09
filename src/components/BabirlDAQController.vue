@@ -106,9 +106,6 @@ export default defineComponent({
       axios.get(props.apiurl + "/" + props.hostname + "/control/setrunnumber/"+this.config.runnumber);
     }
 
-    function test() {
-      console.log('test');
-    } 
 
     return {
       stateStyle,
@@ -120,7 +117,7 @@ export default defineComponent({
       daqstart,
       daqstop,
       setrunnumber,
-      test,
+
       isRunning,
       isSaved,
       config: configPool.get(props.compId),

@@ -78,7 +78,6 @@ export default defineComponent ({
       }}  );
       const ratePerBeam = computed(() => {
          return (id, ch) => {
-            console.log(objectPool);
             if ('bi' in objectPool) {
                return (objectPool["scalers"]?.[id]?.rate[ch]/objectPool.bi.value).toPrecision(4) || "N/A";
             } else {
@@ -98,7 +97,6 @@ export default defineComponent ({
          }
       });
       function add() {
-         console.log("add scaler");
          this.config.scalers.push({ id: this.getIdOptions()[0], ch: 0 });
       }
 
@@ -136,10 +134,8 @@ export default defineComponent ({
          { name: "AKIMUNE R", id: "192.168.2.169-0", ch : 3 },
          { name: "RF", id: "192.168.2.169-0", ch : 5 },
    ];
-      console.log("mounted show scaler");
       // this.update();
       // this.updateAll();
-      console.log(this.config);
    }
 })
 </script>
